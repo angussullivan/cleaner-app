@@ -621,6 +621,35 @@ function initSupabase() {
     }
 }
 
+// Fetches just the PIN/cleaner name/recipients ahead of login, so a device
+// that has never visited this URL before (empty localStorage) still checks
+// the real PIN instead of only the '1234' fallback. Memoized so repeated
+// PIN attempts don't re-fetch once it has resolved.
+let pinSyncPromise = null;
+function syncPinFromSupabase() {
+    if (pinSyncPromise) return pinSyncPromise;
+    const s = getSettings();
+    if (!s.supabaseUrl || !s.supabaseAnonKey || !window.supabase) {
+        return (pinSyncPromise = Promise.resolve());
+    }
+    pinSyncPromise = (async () => {
+        try {
+            const client = window.supabase.createClient(s.supabaseUrl, s.supabaseAnonKey);
+            const { data: remoteSettings } = await client.from('app_settings').select('*').eq('id', 1).single();
+            if (remoteSettings) {
+                const localSt = JSON.parse(localStorage.getItem('ch_settings') || '{}');
+                localStorage.setItem('ch_settings', JSON.stringify({
+                    ...localSt,
+                    cleanerName: remoteSettings.cleaner_name || localSt.cleanerName,
+                    pin:         remoteSettings.pin          || localSt.pin,
+                    recipients:  remoteSettings.recipients   || localSt.recipients,
+                }));
+            }
+        } catch (e) { console.warn('PIN presync failed:', e.message); }
+    })();
+    return pinSyncPromise;
+}
+
 async function syncFromSupabase() {
     if (!sbClient) return;
     try {
@@ -976,18 +1005,23 @@ function updatePinDots() {
         document.getElementById(`pd${i}`).classList.toggle('on', i < pinBuf.length);
     }
 }
-function checkPin() {
+function unlockApp() {
+    document.getElementById('pin-screen').classList.add('gone');
+    document.getElementById('app').style.display = 'flex';
+    pinUnlocked = true;
+    init();
+}
+async function checkPin() {
     const settings = getSettings();
-    if (pinBuf === settings.pin) {
-        document.getElementById('pin-screen').classList.add('gone');
-        document.getElementById('app').style.display = 'flex';
-        pinUnlocked = true;
-        init();
-    } else {
-        document.getElementById('pin-err').textContent = 'Incorrect PIN — try again';
-        pinBuf = '';
-        updatePinDots();
-    }
+    if (pinBuf === settings.pin) { unlockApp(); return; }
+    // Local PIN didn't match — this device may never have synced the real
+    // PIN from Supabase yet (e.g. first visit to a new URL/browser), so
+    // fetch it before rejecting.
+    await syncPinFromSupabase();
+    if (pinBuf === getSettings().pin) { unlockApp(); return; }
+    document.getElementById('pin-err').textContent = 'Incorrect PIN — try again';
+    pinBuf = '';
+    updatePinDots();
 }
 
 // ============================================================
@@ -2220,6 +2254,8 @@ function init() {
     initSupabase(); // will sync from Supabase if configured, then re-render
     renderHome();
 }
+
+syncPinFromSupabase(); // kick off in the background so it's ready by the time PIN entry finishes
 </script>
 </body>
 </html>
