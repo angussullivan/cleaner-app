@@ -1,33 +1,50 @@
-# Cleaner App
+# 67 Res ABNB Manager
 
-A single-file mobile PWA for managing an Airbnb cleaning operation — used by our cleaner to log hours, view the checkout/check-in schedule, manage tasks, and report maintenance issues.
+A single-file mobile PWA for the Reservoir St Airbnbs. Angelica logs hours, follows the checkout plan, and works through tasks. Angus and Jenna manage settings, bookings, and maintenance issues.
+
+The app is served by GitHub Pages: <https://angussullivan.github.io/cleaner-app/>
+
+**Owners: the security changes need a one-time setup before they protect anything.** Follow [docs/OWNER-SETUP.md](docs/OWNER-SETUP.md) in order. Merging the code alone does not lock the database, and running the lockdown SQL too early locks the phones out.
 
 ## Files
 
-- `cleaner.html` — the app (frontend + logic in one file)
-- `supabase-setup.sql` — database schema
-- `.github/scripts/send-emails.js` — evening email reports (7pm no-hours reminder, 8pm daily/weekly/monthly summary)
-- `.github/scripts/sync-airbnb.js` — syncs Airbnb iCal feeds into Supabase hourly; also sends an alert email if a booking checking in within 24h changes
-- `.github/scripts/sync-calendar.js` — syncs cleaning blocks to Google Calendar hourly
-- `.github/workflows/` — GitHub Actions for the above
+- `cleaner.html` — the app
+- `supabase/migrations/` — SQL to run on the existing Supabase project
+- `supabase/functions/pin-login/` — exchanges a PIN for a Supabase session
+- `.github/scripts/send-emails.js` — 7pm reminder and 8pm summaries
+- `.github/scripts/sync-airbnb.js` — hourly Airbnb iCal sync and 24h change alerts
+- `.github/scripts/sync-calendar.js` — hourly Google Calendar sync of manual cleaning blocks
+- `.github/workflows/` — GitHub Actions, all started by cron-job.org (`workflow_dispatch`), not GitHub's scheduler
 
-## Backend
+## How access works
 
-- **Supabase** — data storage (hours, schedule, tasks, maintenance issues), credentials configured in app settings
-- **Supabase Storage** — the `task-photos` bucket, for photos attached to tasks or maintenance issues (up to 3 per item)
-- **Gmail (nodemailer)** — outbound email reports
-- **Google Calendar API** — cleaning block sync
+The publishable Supabase key in `cleaner.html` is public. It cannot read or change data. Angelica, Angus, and Jenna enter a 4-digit PIN. An edge function checks it against a hash the anon key cannot read, then signs in a pre-created user:
 
-## GitHub Actions secrets required
+- Cleaner PIN — hours, plan, tasks, issues, cleaning blocks. No settings and no "Clear all hours".
+- Owner PIN (shared by Angus and Jenna) — the same, plus settings, PIN changes, clearing hours, and adding or correcting bookings.
+
+Bookings added or corrected in the app are marked so the hourly sync does not overwrite them. Checkout cleans (11:00–14:00) are created even when the day already has a house clean. Task priority may be Low, Normal, or Urgent. The plan uses Australia/Sydney dates. Photos: up to 6 on a task, up to 3 on an issue, in a private bucket.
+
+## GitHub Actions secrets
 
 | Secret | Used by |
 |---|---|
-| `SUPABASE_URL` | send-emails, sync-airbnb, sync-calendar |
-| `SUPABASE_SERVICE_KEY` | send-emails, sync-airbnb, sync-calendar |
+| `SUPABASE_URL` | all three scripts |
+| `SUPABASE_SERVICE_KEY` | all three scripts (bypasses RLS; do not rotate it unless you update this secret in the same sitting) |
 | `GMAIL_USER` | send-emails, sync-airbnb |
 | `GMAIL_APP_PASSWORD` | send-emails, sync-airbnb |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | sync-calendar |
+| `GOOGLE_CALENDAR_ID` | sync-calendar |
+| `AIRBNB_ICAL_ROOM_1` | sync-airbnb |
+| `AIRBNB_ICAL_ROOM_2` | sync-airbnb |
+| `AIRBNB_ICAL_ROOM_3` | sync-airbnb |
+| `NOTIFY_CLEANER_EMAIL` | send-emails, sync-airbnb |
+| `NOTIFY_OWNER_EMAILS` | send-emails, sync-airbnb (comma-separated) |
 
-## History
+The iCal values are the full export URLs from Airbnb. They are secrets. Do not commit them.
 
-This repo was originally the RSSL laundry business website. It was renamed to `cleaner-app` on 2026-09-11 to keep its GitHub Actions secrets and Pages configuration, and the laundry site content was moved out to its own repo.
+## Tests
+
+```bash
+node --test tests/*.test.mjs
+```

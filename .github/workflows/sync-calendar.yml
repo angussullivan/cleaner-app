@@ -1,8 +1,9 @@
 name: Sync Cleaning Calendar
 
 on:
-  schedule:
-    - cron: '30 * * * *'  # every hour, offset 30min from sync-airbnb
+  # Triggered externally by cron-job.org every hour (offset 30 minutes from
+  # the Airbnb sync). GitHub's own scheduler is not used — it runs hours late.
+  # See docs/OWNER-SETUP.md.
   workflow_dispatch:
 
 jobs:
@@ -30,3 +31,4 @@ jobs:
           SUPABASE_URL:                ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY:        ${{ secrets.SUPABASE_SERVICE_KEY }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_CALENDAR_ID:          ${{ secrets.GOOGLE_CALENDAR_ID }}

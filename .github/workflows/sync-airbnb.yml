@@ -1,8 +1,9 @@
 name: Sync Airbnb Calendar
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # every hour (UTC)
+  # Triggered externally by cron-job.org every hour. GitHub's own scheduler
+  # delays or skips runs on quiet repos, which made the 24h check-in alerts late.
+  # See docs/OWNER-SETUP.md for the cron-job.org job.
   workflow_dispatch:
 
 jobs:
@@ -27,7 +28,12 @@ jobs:
       - name: Sync Airbnb calendar
         run: cd .github/scripts && node sync-airbnb.js
         env:
-          SUPABASE_URL:        ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+          AIRBNB_ICAL_ROOM_1:   ${{ secrets.AIRBNB_ICAL_ROOM_1 }}
+          AIRBNB_ICAL_ROOM_2:   ${{ secrets.AIRBNB_ICAL_ROOM_2 }}
+          AIRBNB_ICAL_ROOM_3:   ${{ secrets.AIRBNB_ICAL_ROOM_3 }}
+          NOTIFY_CLEANER_EMAIL: ${{ secrets.NOTIFY_CLEANER_EMAIL }}
+          NOTIFY_OWNER_EMAILS:  ${{ secrets.NOTIFY_OWNER_EMAILS }}

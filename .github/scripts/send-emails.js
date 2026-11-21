@@ -18,9 +18,17 @@ const transport = nodemailer.createTransport({
 });
 
 // ── CONFIG ──────────────────────────────────────────────────
-const ANGELICA  = 'angelicasuesscun@icloud.com';
-const OWNERS    = ['angussullivan@gmail.com', 'jenna4134@gmail.com'];
-const EVERYONE  = ['angussullivan@gmail.com', 'jenna4134@gmail.com'];
+// Addresses live in GitHub Actions secrets, not in the repo.
+function parseEmailList(value) {
+    return String(value || '').split(/[,;]+/).map(s => s.trim()).filter(s => s.includes('@'));
+}
+const ANGELICA = parseEmailList(process.env.NOTIFY_CLEANER_EMAIL)[0] || '';
+const OWNERS   = parseEmailList(process.env.NOTIFY_OWNER_EMAILS);
+const EVERYONE = OWNERS;
+if (!ANGELICA || OWNERS.length === 0) {
+    console.error('Missing NOTIFY_CLEANER_EMAIL or NOTIFY_OWNER_EMAILS (comma-separated owner addresses)');
+    process.exit(1);
+}
 const WEEKLY_TARGET = 35;
 const LOCS = {
     airbnb:   'Reservoir St Airbnb Rooms',

@@ -1,0 +1,7 @@
+# Supabase CLI config for the edge function only.
+# The publishable key in the phone app is not a JWT, and the PIN is what
+# authenticates the caller, so the gateway must not require a JWT.
+project_id = "yslpaxzfpdzxzhuspmij"
+
+[functions.pin-login]
+verify_jwt = false

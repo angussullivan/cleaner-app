@@ -39,9 +39,11 @@ jobs:
       - name: Send scheduled emails
         run: cd .github/scripts && node send-emails.js
         env:
-          SUPABASE_URL:        ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL:         ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
-          CRON_SCHEDULE:       ${{ github.event.schedule }}
-          MANUAL_TYPE:         ${{ github.event.inputs.type }}
+          GMAIL_USER:           ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:   ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_CLEANER_EMAIL: ${{ secrets.NOTIFY_CLEANER_EMAIL }}
+          NOTIFY_OWNER_EMAILS:  ${{ secrets.NOTIFY_OWNER_EMAILS }}
+          CRON_SCHEDULE:        ${{ github.event.schedule }}
+          MANUAL_TYPE:          ${{ github.event.inputs.type }}

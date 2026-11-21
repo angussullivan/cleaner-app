@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1B4965">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>67 Res ABNB Manager</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -209,7 +210,7 @@
         .cok{flex:1;padding:12px;background:var(--danger);border:none;border-radius:12px;font-family:inherit;font-size:.88rem;font-weight:700;color:#fff;cursor:pointer}
 
         /* ── TOAST ── */
-        .toast{position:fixed;bottom:calc(76px + var(--safe-bottom) + 10px);left:50%;transform:translateX(-50%) translateY(18px);background:#2c3e50;color:#fff;padding:11px 22px;border-radius:100px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:500;max-width:90%}
+        .toast{position:fixed;bottom:calc(76px + var(--safe-bottom) + 10px);left:50%;transform:translateX(-50%) translateY(18px);background:#2c3e50;color:#fff;padding:11px 18px;border-radius:16px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:500;max-width:min(340px,92vw);text-align:center;line-height:1.35}
         .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
         .toast.g{background:var(--success)}.toast.e{background:var(--danger)}
 
@@ -353,51 +354,51 @@
 <div class="sov" id="sov" onclick="closeSettingsIfBg(event)">
     <div class="ssheet">
         <div class="shandle"></div>
-        <div class="stitle">Settings</div>
-        <div class="ssec">
-            <label class="slbl">Cleaner Name</label>
-            <input class="sinp" id="s-name" type="text" placeholder="e.g. Maria">
+        <div class="stitle" id="sov-title">Settings</div>
+        <div id="sov-cleaner-note" class="snote" style="display:none">
+            You're signed in as the cleaner. PINs, report recipients, and clearing hours are for Angus and Jenna only.
         </div>
-        <div class="ssec">
-            <label class="slbl">Access PIN (4 digits)</label>
-            <input class="sinp" id="s-pin" type="tel" maxlength="4" inputmode="numeric" placeholder="1234">
-        </div>
-        <div class="ssec">
-            <label class="slbl">Report Recipients</label>
-            <input class="sinp" id="s-r1" type="email" placeholder="angussullivan@gmail.com">
-            <input class="sinp" id="s-r2" type="email" placeholder="jenna4134@gmail.com">
-            <input class="sinp" id="s-r3" type="email" placeholder="angelicasuesscun@icloud.com">
-            <input class="sinp" id="s-r4" type="email" placeholder="Optional recipient 4">
-            <input class="sinp" id="s-r5" type="email" placeholder="Optional recipient 5">
-        </div>
-        <div class="ssec">
-            <label class="slbl">EmailJS (optional — for auto-send)</label>
-            <input class="sinp" id="s-ejpk" type="text" placeholder="Public Key">
-            <input class="sinp" id="s-ejsid" type="text" placeholder="Service ID">
-            <input class="sinp" id="s-ejtid" type="text" placeholder="Template ID">
-            <div class="snote">
-                Without EmailJS, tapping "Send Report" opens your mail app with the report pre-filled — just tap Send.<br><br>
-                For fully automatic sending: sign up free at <a href="https://emailjs.com" target="_blank">emailjs.com</a>, connect Gmail,
-                create a template with variables <code>{{to_email}}</code>, <code>{{subject}}</code>, <code>{{message}}</code>,
-                then paste your credentials above.
+        <div id="sov-owner">
+            <div class="ssec">
+                <label class="slbl">Cleaner Name</label>
+                <input class="sinp" id="s-name" type="text" placeholder="Cleaner's name" autocomplete="off">
             </div>
-        </div>
-        <div class="ssec">
-            <label class="slbl">Supabase — required for automated emails</label>
-            <input class="sinp" id="s-sburl" type="url" placeholder="https://xxxxxxxx.supabase.co">
-            <input class="sinp" id="s-sbkey" type="text" placeholder="Anon / Public Key">
-            <div class="snote">
-                Sign up free at <a href="https://supabase.com" target="_blank">supabase.com</a>, create a project,
-                run the <strong>supabase-setup.sql</strong> file in the SQL editor, then paste your
-                <strong>Project URL</strong> and <strong>anon key</strong> from
-                Project Settings → API.
+            <div class="ssec">
+                <label class="slbl">Send Report recipients</label>
+                <input class="sinp" id="s-r1" type="email" placeholder="name@example.com" autocomplete="off">
+                <input class="sinp" id="s-r2" type="email" placeholder="Optional" autocomplete="off">
+                <input class="sinp" id="s-r3" type="email" placeholder="Optional" autocomplete="off">
+                <input class="sinp" id="s-r4" type="email" placeholder="Optional" autocomplete="off">
+                <input class="sinp" id="s-r5" type="email" placeholder="Optional" autocomplete="off">
+                <div class="snote">Used only when someone taps Send Report. The automatic 7pm and 8pm emails are sent from GitHub and do not use this list.</div>
             </div>
+            <div class="ssec">
+                <label class="slbl">New cleaner PIN</label>
+                <input class="sinp" id="s-pin-cleaner" type="tel" maxlength="4" inputmode="numeric" placeholder="Leave blank to keep" autocomplete="off">
+                <label class="slbl">New owner PIN</label>
+                <input class="sinp" id="s-pin-owner" type="tel" maxlength="4" inputmode="numeric" placeholder="Leave blank to keep" autocomplete="off">
+                <div class="snote">4 digits each, and they must be different. The cleaner PIN cannot open this screen. PINs are stored hashed and are not readable from the app.</div>
+            </div>
+            <div class="ssec">
+                <label class="slbl">EmailJS (optional — for Send Report)</label>
+                <input class="sinp" id="s-ejpk" type="text" placeholder="Public Key" autocomplete="off">
+                <input class="sinp" id="s-ejsid" type="text" placeholder="Service ID" autocomplete="off">
+                <input class="sinp" id="s-ejtid" type="text" placeholder="Template ID" autocomplete="off">
+                <div class="snote">
+                    Without EmailJS, tapping Send Report opens the mail app with the report filled in.<br><br>
+                    For sending from the app itself: sign up at <a href="https://emailjs.com" target="_blank">emailjs.com</a>, connect Gmail,
+                    create a template with <code>{{to_email}}</code>, <code>{{subject}}</code>, <code>{{message}}</code>,
+                    then paste the credentials above.
+                </div>
+            </div>
+            <div class="ssec">
+                <label class="slbl" style="color:var(--danger)">Danger Zone</label>
+                <button class="btn2" type="button" style="border-color:var(--danger);color:var(--danger)" onclick="confirmClearData()">Clear All Hours Data</button>
+            </div>
+            <button class="btn1" type="button" onclick="saveSettings()">Save Settings</button>
         </div>
-        <div class="ssec">
-            <label class="slbl" style="color:var(--danger)">Danger Zone</label>
-            <button class="btn2" style="border-color:var(--danger);color:var(--danger)" onclick="confirmClearData()">Clear All Hours Data</button>
-        </div>
-        <button class="btn1" onclick="saveSettings()">Save Settings</button>
+        <button class="btn2" type="button" onclick="lockApp()">Lock app</button>
+        <button class="btn2" type="button" onclick="closeSettings()">Close</button>
     </div>
 </div>
 
@@ -543,6 +544,44 @@
     </div>
 </div>
 
+<!-- Owner booking override -->
+<div class="sov" id="bkov" onclick="closeBookingFormIfBg(event)">
+    <div class="ssheet">
+        <div class="shandle"></div>
+        <div class="stitle" id="bkov-title">Booking</div>
+        <div class="ssec">
+            <label class="slbl">Room</label>
+            <select class="sinp" id="bk-room">
+                <option value="Room 1">Room 1</option>
+                <option value="Room 2">Room 2</option>
+                <option value="Room 3">Room 3</option>
+            </select>
+        </div>
+        <div class="ssec">
+            <label class="slbl">Check-in</label>
+            <input class="sinp" id="bk-in" type="date">
+            <label class="slbl">Check-out</label>
+            <input class="sinp" id="bk-out" type="date">
+        </div>
+        <div class="ssec">
+            <label class="slbl">Note (optional)</label>
+            <input class="sinp" id="bk-note" type="text" placeholder="What was wrong, or a guest name" autocomplete="off">
+        </div>
+        <div class="ssec" id="bk-protect-wrap">
+            <label style="display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--text)">
+                <input type="checkbox" id="bk-protect" checked style="margin-top:3px">
+                <span>Keep these dates. The hourly Airbnb sync will not overwrite or remove this booking.</span>
+            </label>
+        </div>
+        <p id="bk-source" class="snote" style="display:none"></p>
+        <button class="btn1" type="button" id="bk-save" onclick="saveBookingForm()">Save booking</button>
+        <button class="btn2" type="button" id="bk-hide" onclick="setBookingHidden(true)">Hide from schedule</button>
+        <button class="btn2" type="button" id="bk-show" onclick="setBookingHidden(false)">Show on schedule</button>
+        <button class="btn2" type="button" id="bk-delete" style="border-color:var(--danger);color:var(--danger)" onclick="deleteManualBooking()">Delete this booking</button>
+        <button class="btn2" type="button" onclick="closeBookingForm()">Cancel</button>
+    </div>
+</div>
+
 <!-- Photo viewer -->
 <div id="photoViewerOv" onclick="closePhotoViewer()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;padding:24px">
     <img id="photoViewerImg" style="max-width:100%;max-height:100%;border-radius:10px">
@@ -584,26 +623,50 @@ function trackDeleted(id) {
 
 }
 function saveData(d) { localStorage.setItem('ch_data', JSON.stringify(d)); }
+// Publishable key. It ships in this public file on purpose. After lockdown it
+// cannot read or change data; a PIN is exchanged for a real session first.
+const SUPABASE_URL = 'https://yslpaxzfpdzxzhuspmij.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_FoXNm6zbJglmNXMvIKQYQg_rHVWj6p3';
+
 function getSettings() {
     try {
         const s = JSON.parse(localStorage.getItem('ch_settings') || '{}');
         return {
-            pin:              s.pin              || '1234',
-            cleanerName:      s.cleanerName      || 'Our Cleaner',
-            recipients:       s.recipients       || ['angussullivan@gmail.com', 'jenna4134@gmail.com', 'angelicasuesscun@icloud.com'],
-            emailJS:          s.emailJS          || { publicKey: '', serviceId: '', templateId: '' },
-            lastSent:         s.lastSent         || null,
-            supabaseUrl:      s.supabaseUrl      || 'https://yslpaxzfpdzxzhuspmij.supabase.co',
-            supabaseAnonKey:  s.supabaseAnonKey  || 'sb_publishable_FoXNm6zbJglmNXMvIKQYQg_rHVWj6p3',
+            cleanerName: s.cleanerName || 'Our Cleaner',
+            recipients:  Array.isArray(s.recipients) ? s.recipients : [],
+            emailJS:     s.emailJS || { publicKey: '', serviceId: '', templateId: '' },
+            lastSent:    s.lastSent || null,
         };
-    } catch { return { pin:'1234', cleanerName:'Our Cleaner', recipients:['angussullivan@gmail.com','jenna4134@gmail.com','angelicasuesscun@icloud.com'], emailJS:{}, lastSent:null, supabaseUrl:'https://yslpaxzfpdzxzhuspmij.supabase.co', supabaseAnonKey:'sb_publishable_FoXNm6zbJglmNXMvIKQYQg_rHVWj6p3' }; }
+    } catch {
+        return { cleanerName: 'Our Cleaner', recipients: [], emailJS: {}, lastSent: null };
+    }
 }
-function storeSettings(s) { localStorage.setItem('ch_settings', JSON.stringify(s)); }
+function storeSettings(s) {
+    localStorage.setItem('ch_settings', JSON.stringify({
+        cleanerName: s.cleanerName,
+        recipients:  s.recipients,
+        emailJS:     s.emailJS,
+        lastSent:    s.lastSent,
+    }));
+}
 
 // ============================================================
 // DATE UTILS
 // ============================================================
-function todayStr() { return new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Sydney' }); }
+function sydneyParts(date = new Date()) {
+    const fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Australia/Sydney',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hourCycle: 'h23',
+    });
+    const parts = {};
+    fmt.formatToParts(date).forEach(p => { parts[p.type] = p.value; });
+    return { year: Number(parts.year), month: Number(parts.month), day: Number(parts.day) };
+}
+function todayStr() {
+    const p = sydneyParts();
+    return `${p.year}-${String(p.month).padStart(2,'0')}-${String(p.day).padStart(2,'0')}`;
+}
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function dateToStr(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -612,6 +675,20 @@ function strToDate(s) {
     const [y,m,d] = s.split('-').map(Number);
     return new Date(y, m-1, d);
 }
+function addCalendarDays(dateStr, n) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d + n));
+    return dt.toISOString().slice(0, 10);
+}
+function weekdayIndex(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+function getMondayStr(dateStr) {
+    const day = weekdayIndex(dateStr);
+    return addCalendarDays(dateStr, day === 0 ? -6 : 1 - day);
+}
+function sydneyNowDate() { return strToDate(todayStr()); }
 function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
 function getMonday(d) {
     const r = new Date(d);
@@ -620,9 +697,8 @@ function getMonday(d) {
     return r;
 }
 function getWeekDates(offset=0) {
-    const mon = getMonday(new Date());
-    mon.setDate(mon.getDate() + offset * 7);
-    return Array.from({length:7}, (_, i) => addDays(mon, i));
+    const start = addCalendarDays(getMondayStr(todayStr()), offset * 7);
+    return Array.from({length:7}, (_, i) => strToDate(addCalendarDays(start, i)));
 }
 function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate(); }
 function fmt(d) {
@@ -646,42 +722,87 @@ function computeHours(start, end) {
 // SUPABASE SYNC
 // ============================================================
 let sbClient = null;
+let appRole = null;
+let pinBusy = false;
 
-function initSupabase() {
-    const s = getSettings();
-    if (s.supabaseUrl && s.supabaseAnonKey && window.supabase) {
-        sbClient = window.supabase.createClient(s.supabaseUrl, s.supabaseAnonKey);
-        syncFromSupabase();
-    }
+function createSbClient() {
+    if (!window.supabase) return null;
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+    });
 }
-
-// Fetches just the PIN/cleaner name/recipients ahead of login, so a device
-// that has never visited this URL before (empty localStorage) still checks
-// the real PIN instead of only the '1234' fallback. Memoized so repeated
-// PIN attempts don't re-fetch once it has resolved.
-let pinSyncPromise = null;
-function syncPinFromSupabase() {
-    if (pinSyncPromise) return pinSyncPromise;
-    const s = getSettings();
-    if (!s.supabaseUrl || !s.supabaseAnonKey || !window.supabase) {
-        return (pinSyncPromise = Promise.resolve());
+function initSupabase() {
+    if (sbClient) syncFromSupabase();
+}
+function sbUpsert(table, rows) {
+    return sbClient.from(table).upsert(rows, { defaultToNull: false });
+}
+function writeErrorText(error) {
+    const msg = error?.message || 'Save failed';
+    if (/check constraint|priority/i.test(msg)) return 'The server rejected that priority. Choose Low, Normal, or Urgent and try again.';
+    if (/row-level security|permission denied|42501|JWT/i.test(msg)) return 'Not allowed. Lock the app and sign in again.';
+    return msg;
+}
+function reportWrite(error, label) {
+    if (!error) return true;
+    console.warn(label, error.message);
+    toast(`${label}: ${writeErrorText(error)}`, 'e');
+    return false;
+}
+function photoPayload(photos) {
+    return (photos || []).map(p => (p && p.path ? { path: p.path } : null)).filter(Boolean);
+}
+function taskPayload(t) {
+    return {
+        id: t.id,
+        title: t.title,
+        description: t.description || '',
+        priority: t.priority || 'normal',
+        due_date: t.due_date || null,
+        added_by: t.added_by || 'Owner',
+        location: t.location || null,
+        photos: photoPayload(t.photos),
+        status: t.status || 'open',
+        completion_note: t.completion_note || '',
+        completed_at: t.completed_at || null,
+        created_at: t.created_at || new Date().toISOString(),
+    };
+}
+function issuePayload(i) {
+    return {
+        id: i.id,
+        location: i.location,
+        description: i.description || '',
+        priority: i.priority || 'normal',
+        assigned_to: i.assigned_to || 'Angus',
+        photos: photoPayload(i.photos),
+        created_at: i.created_at || new Date().toISOString(),
+        resolved: !!i.resolved,
+    };
+}
+async function signedUrlMap(paths) {
+    const map = new Map();
+    const unique = [...new Set(paths.filter(Boolean))];
+    for (let i = 0; i < unique.length; i += 40) {
+        const chunk = unique.slice(i, i + 40);
+        const { data, error } = await sbClient.storage.from('task-photos').createSignedUrls(chunk, 60 * 60 * 12);
+        if (error || !data) {
+            console.warn('Photo links failed:', error?.message || 'no data');
+            continue;
+        }
+        data.forEach(d => { if (d && d.path && d.signedUrl && !d.error) map.set(d.path, d.signedUrl); });
     }
-    pinSyncPromise = (async () => {
-        try {
-            const client = window.supabase.createClient(s.supabaseUrl, s.supabaseAnonKey);
-            const { data: remoteSettings } = await client.from('app_settings').select('*').eq('id', 1).single();
-            if (remoteSettings) {
-                const localSt = JSON.parse(localStorage.getItem('ch_settings') || '{}');
-                localStorage.setItem('ch_settings', JSON.stringify({
-                    ...localSt,
-                    cleanerName: remoteSettings.cleaner_name || localSt.cleanerName,
-                    pin:         remoteSettings.pin          || localSt.pin,
-                    recipients:  remoteSettings.recipients   || localSt.recipients,
-                }));
-            }
-        } catch (e) { console.warn('PIN presync failed:', e.message); }
-    })();
-    return pinSyncPromise;
+    return map;
+}
+async function signRecordPhotos(records) {
+    if (!sbClient || !records) return records;
+    const paths = records.flatMap(r => (r.photos || []).map(p => p.path));
+    if (!paths.length) return records;
+    const map = await signedUrlMap(paths);
+    return records.map(r => ({
+        ...r,
+        photos: (r.photos || []).map(p => ({ ...p, url: (p.path && map.get(p.path)) || p.url || '' })),
+    }));
 }
 
 async function syncFromSupabase() {
@@ -696,7 +817,7 @@ async function syncFromSupabase() {
         ] = await Promise.all([
             sbClient.from('hours_entries').select('*').order('date', { ascending: false }),
             sbClient.from('maintenance_issues').select('*').order('created_at', { ascending: false }),
-            sbClient.from('app_settings').select('*').eq('id', 1).single(),
+            sbClient.from('app_settings').select('id, cleaner_name, recipients, updated_at').eq('id', 1).single(),
             sbClient.from('tasks').select('*').order('created_at', { ascending: false }),
             sbClient.from('cleaning_blocks').select('*').gte('date', todayStr()),
         ]);
@@ -716,8 +837,8 @@ async function syncFromSupabase() {
         const remoteIds = new Set(remoteClean.map(e => e.id));
         const localOnly = local.filter(e => !remoteIds.has(e.id) && !deletedIds.has(e.id));
         if (localOnly.length > 0) {
-            sbClient.from('hours_entries').upsert(localOnly).then(({ error: ue }) => {
-                if (ue) console.warn('Supabase upsert failed:', ue.message);
+            sbUpsert('hours_entries', localOnly).then(({ error: ue }) => {
+                if (ue) reportWrite(ue, 'Hours sync');
             });
         }
         saveData({ entries: [...remoteClean, ...localOnly].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)) });
@@ -728,23 +849,23 @@ async function syncFromSupabase() {
             const remoteIssueIds = new Set(remoteIssues.map(i => i.id));
             const localOnlyIssues = localIssues.filter(i => !remoteIssueIds.has(i.id) && !i.resolved);
             if (localOnlyIssues.length > 0) {
-                sbClient.from('maintenance_issues').upsert(localOnlyIssues).then(({ error: ie }) => {
-                    if (ie) console.warn('Issue upsert failed:', ie.message);
+                sbUpsert('maintenance_issues', localOnlyIssues.map(issuePayload)).then(({ error: ie }) => {
+                    if (ie) reportWrite(ie, 'Issue sync');
                 });
             }
-            saveIssues([...remoteIssues, ...localOnlyIssues].sort((a, b) =>
+            const mergedIssues = await signRecordPhotos([...remoteIssues, ...localOnlyIssues].sort((a, b) =>
                 new Date(b.created_at) - new Date(a.created_at)));
+            saveIssues(mergedIssues);
         }
 
-        // Sync app settings
+        // Sync app settings. The PIN is not in this row for the signed-in app.
         if (remoteSettings) {
-            const localSt = JSON.parse(localStorage.getItem('ch_settings') || '{}');
-            localStorage.setItem('ch_settings', JSON.stringify({
+            const localSt = getSettings();
+            storeSettings({
                 ...localSt,
                 cleanerName: remoteSettings.cleaner_name || localSt.cleanerName,
-                pin:         remoteSettings.pin          || localSt.pin,
-                recipients:  remoteSettings.recipients   || localSt.recipients,
-            }));
+                recipients:  Array.isArray(remoteSettings.recipients) ? remoteSettings.recipients : localSt.recipients,
+            });
             updateHeader();
         }
 
@@ -754,8 +875,8 @@ async function syncFromSupabase() {
             const remoteTaskIds = new Set(remoteTasks.map(t => t.id));
             const localOnlyTasks = localTasks.filter(t => !remoteTaskIds.has(t.id));
             if (localOnlyTasks.length > 0) {
-                sbClient.from('tasks').upsert(localOnlyTasks).then(({ error: te }) => {
-                    if (te) console.warn('Task upsert failed:', te.message);
+                sbUpsert('tasks', localOnlyTasks.map(taskPayload)).then(({ error: te }) => {
+                    if (te) reportWrite(te, 'Task sync');
                 });
             }
             const merged = [...remoteTasks, ...localOnlyTasks];
@@ -784,8 +905,9 @@ async function syncFromSupabase() {
             }
             const expiredIds = new Set(expired.map(t => t.id));
 
-            saveTasks(merged.filter(t => !expiredIds.has(t.id)).sort((a, b) =>
-                new Date(b.created_at) - new Date(a.created_at)));
+            const keptTasks = merged.filter(t => !expiredIds.has(t.id)).sort((a, b) =>
+                new Date(b.created_at) - new Date(a.created_at));
+            saveTasks(await signRecordPhotos(keptTasks));
             if (pinUnlocked && currentTab === 'tasks') renderTasks();
         }
 
@@ -823,28 +945,31 @@ async function syncFromSupabase() {
 // ============================================================
 // ENTRIES
 // ============================================================
-function addEntry(dateStr, location, hours, notes, startTime, endTime) {
+async function addEntry(dateStr, location, hours, notes, startTime, endTime) {
     const entry = {
         id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
         date: dateStr, location, hours, notes: notes||'',
         start_time: startTime || null, end_time: endTime || null,
     };
+    if (sbClient) {
+        const { error } = await sbClient.from('hours_entries').insert(entry);
+        if (!reportWrite(error, 'Could not save hours')) return false;
+    }
     const data = getData();
     data.entries.unshift(entry);
     saveData(data);
-    // Fire-and-forget sync to Supabase (data is safe in localStorage either way)
-    if (sbClient) sbClient.from('hours_entries').insert(entry).then(({ error }) => {
-        if (error) console.warn('Supabase insert failed:', error.message);
-    });
+    return true;
 }
-function deleteEntry(id) {
+async function deleteEntry(id) {
+    if (sbClient) {
+        const { error } = await sbClient.from('hours_entries').delete().eq('id', id);
+        if (!reportWrite(error, 'Could not delete hours')) return false;
+    }
     const data = getData();
     data.entries = data.entries.filter(e => e.id !== id);
     saveData(data);
     trackDeleted(id);
-    if (sbClient) sbClient.from('hours_entries').delete().eq('id', id).then(({ error }) => {
-        if (error) console.warn('Supabase delete failed:', error.message);
-    });
+    return true;
 }
 function entriesForDate(s)  { return getData().entries.filter(e => e.date === s); }
 function entriesForWeek(wDates) {
@@ -1052,7 +1177,7 @@ let pinUnlocked   = false;
 // PIN
 // ============================================================
 function pinKey(k) {
-    if (pinBuf.length >= 4) return;
+    if (pinBusy || pinBuf.length >= 4) return;
     pinBuf += k;
     updatePinDots();
     if (pinBuf.length === 4) setTimeout(checkPin, 120);
@@ -1073,17 +1198,117 @@ function unlockApp() {
     pinUnlocked = true;
     init();
 }
+async function fetchAppRole() {
+    const { data, error } = await sbClient.rpc('current_app_role');
+    if (error) return { role: null, error };
+    return { role: data || null, error: null };
+}
 async function checkPin() {
-    const settings = getSettings();
-    if (pinBuf === settings.pin) { unlockApp(); return; }
-    // Local PIN didn't match — this device may never have synced the real
-    // PIN from Supabase yet (e.g. first visit to a new URL/browser), so
-    // fetch it before rejecting.
-    await syncPinFromSupabase();
-    if (pinBuf === getSettings().pin) { unlockApp(); return; }
-    document.getElementById('pin-err').textContent = 'Incorrect PIN — try again';
+    if (pinBusy) return;
+    const pin = pinBuf;
+    if (!/^\d{4}$/.test(pin)) return;
+    pinBusy = true;
+    document.getElementById('pin-err').textContent = 'Checking…';
+    try {
+        if (!sbClient) sbClient = createSbClient();
+        if (!sbClient) throw new Error('Supabase did not load');
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/pin-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ pin }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 429 || body.error === 'locked') {
+            document.getElementById('pin-err').textContent = body.message || 'Too many tries. Wait 15 minutes and try again.';
+            pinBuf = '';
+            updatePinDots();
+            return;
+        }
+        if (res.status === 401 && /jwt/i.test(JSON.stringify(body))) {
+            document.getElementById('pin-err').textContent = 'Login is not set up yet. The PIN function must be deployed with JWT verification off.';
+            pinBuf = '';
+            updatePinDots();
+            return;
+        }
+        if (!res.ok || !body.access_token || !body.refresh_token) {
+            document.getElementById('pin-err').textContent = body.message || 'Incorrect PIN — try again';
+            pinBuf = '';
+            updatePinDots();
+            return;
+        }
+        const { error: sessionError } = await sbClient.auth.setSession({
+            access_token: body.access_token,
+            refresh_token: body.refresh_token,
+        });
+        if (sessionError) throw sessionError;
+        const { role, error: roleError } = await fetchAppRole();
+        if (!role) {
+            await sbClient.auth.signOut();
+            document.getElementById('pin-err').textContent = roleError
+                ? 'Signed in, but the account role is not set up yet.'
+                : 'Signed in, but this account has no role yet.';
+            pinBuf = '';
+            updatePinDots();
+            return;
+        }
+        appRole = role;
+        localStorage.setItem('ch_role', role);
+        unlockApp();
+    } catch (e) {
+        console.warn('PIN login failed:', e.message || e);
+        document.getElementById('pin-err').textContent = 'Could not reach the server. Check your connection and try again.';
+        pinBuf = '';
+        updatePinDots();
+    } finally {
+        pinBusy = false;
+    }
+}
+async function lockApp() {
+    closeSettings();
+    appRole = null;
+    pinUnlocked = false;
     pinBuf = '';
     updatePinDots();
+    const err = document.getElementById('pin-err');
+    if (err) err.textContent = '';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('pin-screen').classList.remove('gone');
+    if (sbClient) await sbClient.auth.signOut().catch(() => {});
+}
+async function boot() {
+    pinBusy = true;
+    try {
+        sbClient = createSbClient();
+        if (!sbClient) {
+            document.getElementById('pin-err').textContent = 'Could not load the app. Check your connection and reload.';
+            return;
+        }
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (!session) return;
+        const { role, error } = await fetchAppRole();
+        if (role) {
+            appRole = role;
+            localStorage.setItem('ch_role', role);
+            unlockApp();
+            return;
+        }
+        const cached = localStorage.getItem('ch_role');
+        const network = error && /fetch|network|timeout|Load failed/i.test(error.message || '');
+        if (network && cached) {
+            appRole = cached;
+            unlockApp();
+            return;
+        }
+        await sbClient.auth.signOut().catch(() => {});
+    } catch (e) {
+        console.warn('boot failed:', e.message || e);
+    } finally {
+        pinBusy = false;
+    }
 }
 
 // ============================================================
@@ -1107,7 +1332,7 @@ function showTab(tab) {
 // HOME TAB
 // ============================================================
 function renderHome() {
-    const now   = new Date();
+    const now   = sydneyNowDate();
     const y     = now.getFullYear();
     const m     = now.getMonth();
     const today = todayStr();
@@ -1267,7 +1492,7 @@ async function renderHomeAirbnb() {
 
     // Collect all activity dates (checkins and checkouts) from today onwards
     const activityDates = new Set();
-    data.forEach(b => {
+    data.filter(b => !b.suppressed).forEach(b => {
         if (b.checkout >= today) activityDates.add(b.checkout);
         if (b.checkin  >= today) activityDates.add(b.checkin);
     });
@@ -1280,8 +1505,9 @@ async function renderHomeAirbnb() {
     const dateLabel  = isToday ? 'Today' : `${DAY_NAMES[dt.getDay()]} ${d} ${MONTH_NAMES[m - 1].slice(0,3)}`;
 
     const seenHome = new Set();
-    const checkouts = data.filter(b => b.checkout === nextDate).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`out-${b.room}`; return seenHome.has(k) ? false : seenHome.add(k); });
-    const checkins  = data.filter(b => b.checkin  === nextDate).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`in-${b.room}`;  return seenHome.has(k) ? false : seenHome.add(k); });
+    const visibleHome = data.filter(b => !b.suppressed);
+    const checkouts = visibleHome.filter(b => b.checkout === nextDate).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`out-${b.room}`; return seenHome.has(k) ? false : seenHome.add(k); });
+    const checkins  = visibleHome.filter(b => b.checkin  === nextDate).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`in-${b.room}`;  return seenHome.has(k) ? false : seenHome.add(k); });
 
     let rows = '';
     checkouts.forEach((b, i) => {
@@ -1387,6 +1613,94 @@ function saveCleaningBlock() {
     toast('Cleaning block saved', 'g');
 }
 
+let planBookings = {};
+let editingBookingId = null;
+
+function jsAttr(s) {
+    return String(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+}
+
+function openBookingForm(id) {
+    if (appRole !== 'owner') { toast('Only an owner can change bookings', 'e'); return; }
+    editingBookingId = id || null;
+    const b = id ? planBookings[id] : null;
+    document.getElementById('bkov-title').textContent = b ? 'Correct booking' : 'Add booking';
+    document.getElementById('bk-room').value = b?.room || 'Room 1';
+    document.getElementById('bk-in').value = b?.checkin || todayStr();
+    document.getElementById('bk-out').value = b?.checkout || addCalendarDays(todayStr(), 1);
+    document.getElementById('bk-note').value = b?.summary || '';
+    const protect = document.getElementById('bk-protect');
+    const manual = !b || b.source === 'manual';
+    protect.checked = manual ? true : b.pinned !== false;
+    protect.disabled = manual;
+    const source = document.getElementById('bk-source');
+    source.style.display = b ? '' : 'none';
+    source.textContent = !b ? '' : b.source === 'manual'
+        ? 'Added in the app. Airbnb sync will not remove it.'
+        : 'From the Airbnb feed. Leave “keep these dates” on so the next sync does not undo your correction.';
+    document.getElementById('bk-hide').style.display = b && !b.suppressed ? '' : 'none';
+    document.getElementById('bk-show').style.display = b && b.suppressed ? '' : 'none';
+    document.getElementById('bk-delete').style.display = b && b.source === 'manual' ? '' : 'none';
+    document.getElementById('bkov').classList.add('on');
+}
+function closeBookingForm() {
+    document.getElementById('bkov').classList.remove('on');
+    editingBookingId = null;
+}
+function closeBookingFormIfBg(e) { if (e.target === document.getElementById('bkov')) closeBookingForm(); }
+
+async function saveBookingForm() {
+    if (appRole !== 'owner') { toast('Only an owner can change bookings', 'e'); return; }
+    if (!sbClient) { toast('Not signed in', 'e'); return; }
+    const room = document.getElementById('bk-room').value;
+    const checkin = document.getElementById('bk-in').value;
+    const checkout = document.getElementById('bk-out').value;
+    const summary = document.getElementById('bk-note').value.trim();
+    if (!room || !checkin || !checkout) { toast('Room and both dates are required', 'e'); return; }
+    if (checkout <= checkin) { toast('Check-out must be after check-in', 'e'); return; }
+    const existing = editingBookingId ? planBookings[editingBookingId] : null;
+    const manual = !existing || existing.source === 'manual';
+    const row = {
+        id: existing ? existing.id : `manual-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        room,
+        checkin,
+        checkout,
+        summary,
+        source: manual ? 'manual' : 'ical',
+        pinned: manual ? true : document.getElementById('bk-protect').checked,
+        suppressed: existing ? !!existing.suppressed : false,
+        fetched_at: new Date().toISOString(),
+    };
+    const { error } = await sbUpsert('airbnb_bookings', row);
+    if (!reportWrite(error, 'Could not save booking')) return;
+    closeBookingForm();
+    toast(existing ? 'Booking updated' : 'Booking added', 'g');
+    renderAirbnb();
+}
+
+async function setBookingHidden(hidden) {
+    if (appRole !== 'owner' || !editingBookingId || !sbClient) return;
+    const { error } = await sbClient.from('airbnb_bookings').update({
+        suppressed: hidden,
+        pinned: true,
+    }).eq('id', editingBookingId);
+    if (!reportWrite(error, hidden ? 'Could not hide booking' : 'Could not show booking')) return;
+    closeBookingForm();
+    toast(hidden ? 'Hidden from the schedule' : 'Booking is visible again', 'g');
+    renderAirbnb();
+}
+
+async function deleteManualBooking() {
+    if (appRole !== 'owner' || !editingBookingId || !sbClient) return;
+    const existing = planBookings[editingBookingId];
+    if (!existing || existing.source !== 'manual') { toast('Only bookings added in the app can be deleted', 'e'); return; }
+    const { error } = await sbClient.from('airbnb_bookings').delete().eq('id', editingBookingId);
+    if (!reportWrite(error, 'Could not delete booking')) return;
+    closeBookingForm();
+    toast('Booking deleted', 'g');
+    renderAirbnb();
+}
+
 function deleteCleaningBlock() {
     if (!cleaningFormDate || !editingCleaningId) return;
     const blocks = getCleaningBlocks();
@@ -1409,13 +1723,9 @@ async function renderAirbnb() {
         <div id="airbnb-list"><div style="text-align:center;color:#aaa;padding:40px 0;font-size:0.9rem">Loading…</div></div>
     </div>`;
 
-    // Build 10-day date list
-    const today = new Date();
-    const tStr  = dateToStr(today);
-    const days  = Array.from({ length: AIRBNB_DAYS }, (_, i) => {
-        const d = new Date(today); d.setDate(d.getDate() + i);
-        return dateToStr(d);
-    });
+    // Sydney calendar days, not the browser's timezone.
+    const tStr = todayStr();
+    const days = Array.from({ length: AIRBNB_DAYS }, (_, i) => addCalendarDays(tStr, i));
     const endStr = days[days.length - 1];
 
     // Fetch Airbnb bookings
@@ -1432,63 +1742,92 @@ async function renderAirbnb() {
             return;
         }
         bookings = data || [];
+        planBookings = {};
+        bookings.forEach(b => { planBookings[b.id] = b; });
     }
 
-    // Build activity map keyed by date
+    // Visible bookings drive the schedule. Suppressed ones stay out of the
+    // checkout-clean rule so a hidden booking does not invent a clean.
     const byDate = {};
+    const hiddenByDate = {};
     bookings.forEach(b => {
-        if (b.checkout >= tStr && b.checkout <= endStr) {
-            if (!byDate[b.checkout]) byDate[b.checkout] = [];
-            byDate[b.checkout].push({ type: 'checkout', ...b });
+        const into = (map, key) => {
+            if (!map[key]) map[key] = [];
+            map[key].push(b);
+        };
+        if (b.suppressed) {
+            if (appRole !== 'owner') return;
+            const anchor = (b.checkout >= tStr && b.checkout <= endStr) ? b.checkout
+                : (b.checkin >= tStr && b.checkin <= endStr) ? b.checkin : null;
+            if (anchor) into(hiddenByDate, anchor);
+            return;
         }
-        if (b.checkin >= tStr && b.checkin <= endStr) {
-            if (!byDate[b.checkin]) byDate[b.checkin] = [];
-            byDate[b.checkin].push({ type: 'checkin', ...b });
-        }
+        if (b.checkout >= tStr && b.checkout <= endStr) into(byDate, b.checkout);
+        if (b.checkin >= tStr && b.checkin <= endStr) into(byDate, b.checkin);
     });
 
-    // Auto-create cleaning blocks for checkout days that don't have one yet
+    // Checkout cleans are 11:00–14:00 with id YYYY-MM-DD-auto. A manual house
+    // clean on the same day must not suppress them.
     const blocks = getCleaningBlocks();
     let blocksDirty = false;
     days.forEach(ds => {
         const activity = byDate[ds] || [];
-        const hasCheckout = activity.some(a => a.type === 'checkout');
-        if (hasCheckout && !blocks[ds]) {
+        const hasCheckout = activity.some(b => b.checkout === ds);
+        const dayBlocks = blocks[ds] || [];
+        if (hasCheckout && !dayBlocks.some(b => b.id === `${ds}-auto` || b.id === ds)) {
             const newBlock = { id: `${ds}-auto`, date: ds, start_time: '11:00', end_time: '14:00', notes: '' };
-            blocks[ds] = [newBlock];
+            blocks[ds] = [...dayBlocks, newBlock];
             blocksDirty = true;
-            if (sbClient) sbClient.from('cleaning_blocks').upsert(newBlock, { onConflict: 'id' }).then(({ error }) => { if (error) console.warn('Auto cleaning block failed:', error.message); });
+            if (sbClient) sbUpsert('cleaning_blocks', newBlock).then(({ error }) => { if (error) reportWrite(error, 'Checkout clean'); });
         }
     });
     if (blocksDirty) saveCleaningBlocks(blocks);
 
     const pencilSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>`;
 
-    let html = '';
+    const bookingControls = (b) => {
+        if (appRole !== 'owner') return '';
+        const mark = b.source === 'manual' ? 'Added' : b.pinned ? 'Kept' : '';
+        return `${mark ? `<span style="font-size:.62rem;font-weight:700;color:#888;margin-left:auto">${mark}</span>` : '<span style="margin-left:auto"></span>'}
+            <button type="button" class="rbtn" style="background:#eef2f6;color:var(--ocean);flex-shrink:0" onclick="openBookingForm('${jsAttr(b.id)}')" title="Edit booking">${pencilSvg}</button>`;
+    };
+
+    let html = appRole === 'owner'
+        ? `<button class="btn2" style="margin:0 0 14px" onclick="openBookingForm(null)">+ Add or correct a booking</button>`
+        : '';
     days.forEach(ds => {
         const isToday  = ds === tStr;
         const activity = byDate[ds] || [];
         const seen = new Set();
-        const checkouts = activity.filter(a => a.type === 'checkout').sort((a,b) => a.room.localeCompare(b.room)).filter(a => { const k=`out-${a.room}`; return seen.has(k) ? false : seen.add(k); });
-        const checkins  = activity.filter(a => a.type === 'checkin').sort((a,b) => a.room.localeCompare(b.room)).filter(a => { const k=`in-${a.room}`;  return seen.has(k) ? false : seen.add(k); });
-        const block     = blocks[ds];
+        const checkouts = activity.filter(b => b.checkout === ds).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`out-${b.room}`; return seen.has(k) ? false : seen.add(k); });
+        const checkins  = activity.filter(b => b.checkin === ds).sort((a,b) => a.room.localeCompare(b.room)).filter(b => { const k=`in-${b.room}`; return seen.has(k) ? false : seen.add(k); });
 
         // Checkout/checkin rows
-        const activityRows = [...checkouts.map((a, i) => `
+        const activityRows = [...checkouts.map((a) => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #dce9f3">
                 <span style="background:#E05C5C;color:#fff;border-radius:6px;padding:3px 9px;font-size:0.7rem;font-weight:700;flex-shrink:0;letter-spacing:.3px">CHECK-OUT</span>
                 <span style="font-size:0.88rem;font-weight:600;color:#2C3E50">${escHtml(a.room)}</span>
+                ${bookingControls(a)}
             </div>`),
             ...checkins.map((a, i) => `
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;${i < checkins.length-1 ? 'border-bottom:1px solid #dce9f3' : ''}">
                 <span style="background:#27AE60;color:#fff;border-radius:6px;padding:3px 9px;font-size:0.7rem;font-weight:700;flex-shrink:0;letter-spacing:.3px">CHECK-IN</span>
                 <span style="font-size:0.88rem;font-weight:600;color:#2C3E50">${escHtml(a.room)}</span>
+                ${bookingControls(a)}
             </div>`)
         ].join('');
 
+        const hiddenRows = (hiddenByDate[ds] || []).map(b => `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;opacity:.6">
+                <span style="background:#999;color:#fff;border-radius:6px;padding:3px 9px;font-size:0.7rem;font-weight:700;flex-shrink:0">HIDDEN</span>
+                <span style="font-size:0.88rem;font-weight:600;color:#2C3E50">${escHtml(b.room)}</span>
+                <button type="button" class="rbtn" style="background:#eef2f6;color:var(--ocean);margin-left:auto" onclick="openBookingForm('${jsAttr(b.id)}')" title="Edit booking">${pencilSvg}</button>
+            </div>`).join('');
+
         const dayBlocks = blocks[ds] || [];
-        const autoBlocks   = dayBlocks.filter(b => b.id.endsWith('-auto'));
-        const manualBlocks = dayBlocks.filter(b => !b.id.endsWith('-auto'));
+        const isAutoClean = (b) => b.id === `${ds}-auto` || b.id === ds;
+        const autoBlocks   = dayBlocks.filter(isAutoClean);
+        const manualBlocks = dayBlocks.filter(b => !isAutoClean(b));
 
         // Auto Airbnb clean block(s) — rendered inside the Airbnb box
         const autoBlocksHTML = autoBlocks.map(b => `
@@ -1503,10 +1842,11 @@ async function renderAirbnb() {
             </div>`).join('');
 
         // Airbnb grouped box: checkin/checkout rows + auto clean block
-        const hasAirbnbContent = activity.length > 0 || autoBlocks.length > 0;
+        const hasAirbnbContent = activity.length > 0 || autoBlocks.length > 0 || hiddenRows;
         const airbnbBoxHTML = hasAirbnbContent ? `
             <div style="background:#f5faff;border:1.5px solid #aed1e8;border-radius:10px;padding:10px;margin-bottom:8px">
                 ${activityRows}
+                ${hiddenRows}
                 ${autoBlocksHTML}
             </div>` : '';
 
@@ -1613,10 +1953,9 @@ function setLogEnd(v) {
     renderLog();
 }
 function shiftDate(dir) {
-    const d = strToDate(logDate);
-    d.setDate(d.getDate() + dir);
-    if (d > new Date()) return;
-    logDate = dateToStr(d);
+    const next = addCalendarDays(logDate, dir);
+    if (next > todayStr()) return;
+    logDate = next;
     renderLog();
 }
 function setLogDateFromPicker(v) {
@@ -1624,12 +1963,13 @@ function setLogDateFromPicker(v) {
     logDate = v;
     renderLog();
 }
-function submitEntry() {
+async function submitEntry() {
     if (!logLoc) { toast('Select a location first', 'e'); return; }
     const hVal = computeHours(logStart, logEnd);
     if (hVal <= 0) { toast('Finish time must be after start time', 'e'); return; }
     const notes = document.getElementById('log-notes')?.value?.trim() || '';
-    addEntry(logDate, logLoc, hVal, notes, logStart, logEnd);
+    const ok = await addEntry(logDate, logLoc, hVal, notes, logStart, logEnd);
+    if (!ok) return;
     toast('Entry added!', 'g');
     logLoc = null;
     renderLog();
@@ -1709,7 +2049,7 @@ function renderHours() {
         <button class="btn1" onclick="sendReport(getWeekDates(${weekOffset}))">Send Report for This Week</button>`;
 
     } else {
-        const now   = new Date();
+        const now   = sydneyNowDate();
         const baseY = now.getFullYear();
         const baseM = now.getMonth();
         let y = baseY, m = baseM + monthOffset;
@@ -1799,30 +2139,43 @@ function renderHours() {
 // SETTINGS
 // ============================================================
 function openSettings() {
-    const s = getSettings();
-    document.getElementById('s-name').value  = s.cleanerName;
-    document.getElementById('s-pin').value   = s.pin;
-    document.getElementById('s-r1').value    = s.recipients[0] || '';
-    document.getElementById('s-r2').value    = s.recipients[1] || '';
-    document.getElementById('s-r3').value    = s.recipients[2] || '';
-    document.getElementById('s-r4').value    = s.recipients[3] || '';
-    document.getElementById('s-r5').value    = s.recipients[4] || '';
-    document.getElementById('s-ejpk').value  = s.emailJS.publicKey  || '';
-    document.getElementById('s-ejsid').value = s.emailJS.serviceId  || '';
-    document.getElementById('s-ejtid').value = s.emailJS.templateId || '';
-    document.getElementById('s-sburl').value = s.supabaseUrl      || '';
-    document.getElementById('s-sbkey').value = s.supabaseAnonKey  || '';
+    const owner = appRole === 'owner';
+    document.getElementById('sov-title').textContent = owner ? 'Settings' : 'Account';
+    document.getElementById('sov-owner').style.display = owner ? '' : 'none';
+    document.getElementById('sov-cleaner-note').style.display = owner ? 'none' : '';
+    if (owner) {
+        const s = getSettings();
+        document.getElementById('s-name').value = s.cleanerName === 'Our Cleaner' ? '' : s.cleanerName;
+        document.getElementById('s-pin-cleaner').value = '';
+        document.getElementById('s-pin-owner').value = '';
+        document.getElementById('s-r1').value = s.recipients[0] || '';
+        document.getElementById('s-r2').value = s.recipients[1] || '';
+        document.getElementById('s-r3').value = s.recipients[2] || '';
+        document.getElementById('s-r4').value = s.recipients[3] || '';
+        document.getElementById('s-r5').value = s.recipients[4] || '';
+        document.getElementById('s-ejpk').value  = s.emailJS.publicKey  || '';
+        document.getElementById('s-ejsid').value = s.emailJS.serviceId  || '';
+        document.getElementById('s-ejtid').value = s.emailJS.templateId || '';
+    }
     document.getElementById('sov').classList.add('on');
 }
 function closeSettings() { document.getElementById('sov').classList.remove('on'); }
 function closeSettingsIfBg(e) { if (e.target===document.getElementById('sov')) closeSettings(); }
-function saveSettings() {
-    const pin = document.getElementById('s-pin').value.trim();
-    if (pin && !/^\d{4}$/.test(pin)) { toast('PIN must be exactly 4 digits', 'e'); return; }
+async function saveSettings() {
+    if (appRole !== 'owner') { toast('Only an owner can change settings', 'e'); return; }
+    const cleanerPin = document.getElementById('s-pin-cleaner').value.trim();
+    const ownerPin = document.getElementById('s-pin-owner').value.trim();
+    if ((cleanerPin && !/^\d{4}$/.test(cleanerPin)) || (ownerPin && !/^\d{4}$/.test(ownerPin))) {
+        toast('PINs must be exactly 4 digits', 'e');
+        return;
+    }
+    if (cleanerPin && ownerPin && cleanerPin === ownerPin) {
+        toast('Cleaner PIN and owner PIN must be different', 'e');
+        return;
+    }
     const s = getSettings();
-    s.cleanerName  = document.getElementById('s-name').value.trim() || 'Our Cleaner';
-    s.pin          = pin || s.pin;
-    s.recipients   = [
+    s.cleanerName = document.getElementById('s-name').value.trim() || 'Our Cleaner';
+    s.recipients = [
         document.getElementById('s-r1').value.trim(),
         document.getElementById('s-r2').value.trim(),
         document.getElementById('s-r3').value.trim(),
@@ -1834,27 +2187,40 @@ function saveSettings() {
         serviceId:  document.getElementById('s-ejsid').value.trim(),
         templateId: document.getElementById('s-ejtid').value.trim(),
     };
-    s.supabaseUrl     = document.getElementById('s-sburl').value.trim();
-    s.supabaseAnonKey = document.getElementById('s-sbkey').value.trim();
+    if (!sbClient) { toast('Not signed in', 'e'); return; }
+    const { error } = await sbUpsert('app_settings', {
+        id: 1,
+        cleaner_name: s.cleanerName,
+        recipients: s.recipients,
+        updated_at: new Date().toISOString(),
+    });
+    if (!reportWrite(error, 'Could not save settings')) return;
+    if (cleanerPin) {
+        const { error: pinErr } = await sbClient.rpc('set_app_pin', { target_role: 'cleaner', new_pin: cleanerPin });
+        if (!reportWrite(pinErr, 'Could not change the cleaner PIN')) return;
+    }
+    if (ownerPin) {
+        const { error: pinErr } = await sbClient.rpc('set_app_pin', { target_role: 'owner', new_pin: ownerPin });
+        if (!reportWrite(pinErr, 'Could not change the owner PIN')) return;
+    }
     storeSettings(s);
     initEmailJS();
-    initSupabase(); // reconnect with new credentials if changed
-    pushSettingsToSupabase(s);
     closeSettings();
-    toast('Settings saved!', 'g');
+    toast('Settings saved', 'g');
     updateHeader();
 }
 
 function confirmClearData() {
-    showConfirm('Clear all data?', 'This will permanently delete all logged hours. This cannot be undone.', 'Delete Everything', () => {
+    if (appRole !== 'owner') { toast('Only an owner can clear hours', 'e'); return; }
+    showConfirm('Clear all data?', 'This will permanently delete all logged hours. This cannot be undone.', 'Delete Everything', async () => {
+        if (!sbClient) { toast('Not signed in', 'e'); return; }
+        const { error } = await sbClient.rpc('clear_all_hours');
+        if (!reportWrite(error, 'Could not clear hours')) return;
         saveData({ entries: [] });
         const s = getSettings(); s.lastSent = null; storeSettings(s);
-        if (sbClient) sbClient.from('hours_entries').delete().neq('id', '').then(({ error }) => {
-            if (error) console.warn('Supabase clear failed:', error.message);
-        });
         closeSettings();
         renderHome();
-        toast('All data cleared', 'e');
+        toast('All hours cleared', 'e');
     }, true);
 }
 
@@ -1884,8 +2250,9 @@ function confirmDelete(id) {
         'Delete entry?',
         `${loc?.name||entry.location} · ${fh(entry.hours)}h on ${fmt(strToDate(entry.date))}`,
         'Delete',
-        () => {
-            deleteEntry(id);
+        async () => {
+            const ok = await deleteEntry(id);
+            if (!ok) return;
             if (currentTab==='home') renderHome();
             if (currentTab==='log')  renderLog();
             if (currentTab==='hours') renderHours();
@@ -1934,11 +2301,17 @@ function entryItemHTML(e, showDelete) {
 }
 
 function updateHeader() {
-    const now = new Date();
+    const now = sydneyNowDate();
     document.getElementById('hdr-date').textContent = `${DAY_NAMES[now.getDay()]}, ${now.getDate()} ${MONTH_NAMES[now.getMonth()]}`;
     const name = getSettings().cleanerName;
+    const role = appRole === 'owner' ? 'Owner' : appRole === 'cleaner' ? 'Cleaner' : '';
     const nameEl = document.getElementById('hdr-name');
-    if (nameEl) nameEl.textContent = name && name !== 'Our Cleaner' ? `Cleaner: ${name}` : '';
+    if (nameEl) {
+        const bits = [];
+        if (role) bits.push(role);
+        if (name && name !== 'Our Cleaner') bits.push(name);
+        nameEl.textContent = bits.join(' · ');
+    }
 }
 
 // ============================================================
@@ -2072,9 +2445,10 @@ async function uploadOneIssuePhoto(issueId, p, i) {
     try {
         const { error } = await sbClient.storage.from('task-photos').upload(path, p.blob, { contentType: 'image/jpeg' });
         if (error) throw error;
-        const { data } = sbClient.storage.from('task-photos').getPublicUrl(path);
+        const { data, error: signErr } = await sbClient.storage.from('task-photos').createSignedUrl(path, 60 * 60 * 12);
+        if (signErr) console.warn('Photo link failed:', signErr.message);
         URL.revokeObjectURL(p.url);
-        return { path, url: data.publicUrl };
+        return { path, url: data?.signedUrl || '' };
     } catch (err) {
         console.warn('Photo upload failed:', err.message);
         toast('A photo failed to upload', 'e');
@@ -2109,78 +2483,73 @@ async function submitIssueForm() {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Saving…';
     issueFormSaving = true;
-    let photos;
     try {
-        photos = await uploadPendingIssuePhotos(issueId);
+        const photos = await uploadPendingIssuePhotos(issueId);
+        const issues = getIssues();
+        let row;
+        if (wasEditingId) {
+            const idx = issues.findIndex(i => i.id === wasEditingId);
+            if (idx === -1) {
+                issueFormSaving = false;
+                toast('This issue no longer exists — nothing saved', 'e');
+                closeIssueForm();
+                return;
+            }
+            issues[idx] = { ...issues[idx], location: issueFormLoc, description: desc, priority: issueFormPriority, assigned_to: issueFormAssignedTo, photos };
+            row = issues[idx];
+        } else {
+            row = {
+                id: issueId,
+                location: issueFormLoc,
+                description: desc,
+                priority: issueFormPriority,
+                assigned_to: issueFormAssignedTo,
+                photos,
+                created_at: new Date().toISOString(),
+                resolved: false,
+            };
+        }
+        if (!sbClient) { toast('Not signed in — issue not saved', 'e'); return; }
+        const { error } = await sbUpsert('maintenance_issues', issuePayload(row));
+        if (!reportWrite(error, 'Could not save issue')) return;
+        if (!wasEditingId) issues.unshift(row);
+        saveIssues(issues);
+        issueFormSaving = false;
+        closeIssueForm();
+        if (currentTab === 'tasks') renderTasks();
+        if (currentTab === 'home') renderHome();
+        toast(wasEditingId ? 'Issue updated!' : 'Issue reported!', 'g');
     } catch (err) {
-        console.warn('Photo upload step failed:', err.message);
-        toast('Could not save photos — issue not saved, try again', 'e');
-        return;
+        console.warn('Issue save failed:', err.message);
+        toast('Could not save the issue. Try again.', 'e');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = prevLabel;
         issueFormSaving = false;
     }
-
-    const issues = getIssues();
-
-    if (wasEditingId) {
-        const idx = issues.findIndex(i => i.id === wasEditingId);
-        if (idx === -1) { toast('This issue no longer exists — nothing saved', 'e'); closeIssueForm(); return; }
-        issues[idx].location     = issueFormLoc;
-        issues[idx].description  = desc;
-        issues[idx].priority     = issueFormPriority;
-        issues[idx].assigned_to  = issueFormAssignedTo;
-        issues[idx].photos       = photos;
-        saveIssues(issues);
-        if (sbClient) sbClient.from('maintenance_issues').upsert(issues[idx]).then(({ error }) => { if (error) console.warn('Issue update failed:', error.message); });
-        closeIssueForm();
-        if (currentTab === 'tasks') renderTasks();
-        if (currentTab === 'home')  renderHome();
-        toast('Issue updated!', 'g');
-    } else {
-        const issue = {
-            id:           issueId,
-            location:     issueFormLoc,
-            description:  desc,
-            priority:     issueFormPriority,
-            assigned_to:  issueFormAssignedTo,
-            photos,
-            created_at:   new Date().toISOString(),
-            resolved:     false,
-            notified:     false,
-        };
-        issues.unshift(issue);
-        saveIssues(issues);
-        if (sbClient) sbClient.from('maintenance_issues').insert(issue).then(({ error }) => { if (error) console.warn('Issue insert failed:', error.message); });
-        closeIssueForm();
-        if (currentTab === 'tasks') renderTasks();
-        if (currentTab === 'home')  renderHome();
-        toast('Issue reported!', 'g');
-    }
 }
 
 function resolveIssue(id) {
-    showConfirm('Resolve issue?', 'Mark this issue as fixed and remove it from the open list.', 'Resolve', () => {
+    showConfirm('Resolve issue?', 'Mark this issue as fixed and remove it from the open list.', 'Resolve', async () => {
         const issues = getIssues();
         const idx = issues.findIndex(i => i.id === id);
         if (idx === -1) return;
         const photosToDelete = issues[idx].photos || [];
-        issues[idx].resolved = true;
-        issues[idx].photos   = []; // resolved issues don't keep their photos, to save storage
-        saveIssues(issues);
         if (sbClient) {
-            sbClient.from('maintenance_issues').update({ resolved: true, photos: [] }).eq('id', id)
-                .then(({ error }) => { if (error) console.warn('Issue resolve failed:', error.message); });
+            const { error } = await sbClient.from('maintenance_issues').update({ resolved: true, photos: [] }).eq('id', id);
+            if (!reportWrite(error, 'Could not resolve issue')) return;
             const paths = photosToDelete.map(p => p.path).filter(Boolean);
             if (paths.length) {
-                sbClient.storage.from('task-photos').remove(paths).then(({ error }) => {
-                    if (error) console.warn('Photo delete on resolve failed:', error.message);
+                sbClient.storage.from('task-photos').remove(paths).then(({ error: pe }) => {
+                    if (pe) console.warn('Photo delete on resolve failed:', pe.message);
                 });
             }
         }
+        issues[idx].resolved = true;
+        issues[idx].photos = [];
+        saveIssues(issues);
         if (currentTab === 'tasks') renderTasks();
-        if (currentTab === 'home')  renderHome();
+        if (currentTab === 'home') renderHome();
         toast('Issue marked resolved', 'g');
     }, false);
 }
@@ -2264,13 +2633,16 @@ function groupedOpenTasksHTML(tasks) {
             const sortByPriority = (arr) => arr.slice().sort((a, b) =>
                 (TASK_PRIORITY_ORDER[a.priority] ?? 1) - (TASK_PRIORITY_ORDER[b.priority] ?? 1));
             const urgentRest = sortByPriority(rest.filter(t => t.priority === 'urgent'));
-            const normalRest = sortByPriority(rest.filter(t => t.priority !== 'urgent'));
+            const lowRest = sortByPriority(rest.filter(t => t.priority === 'low'));
+            const normalRest = sortByPriority(rest.filter(t => t.priority !== 'urgent' && t.priority !== 'low'));
 
             const blocks = [];
             if (urgentRest.length > 0) blocks.push(`<div style="margin-top:8px">${urgentRest.map(taskItemHTML).join('')}</div>`);
             if (overdue.length > 0) blocks.push(`<div class="done-toggle" style="margin-top:10px;color:var(--danger)">Overdue !</div>
                 <div style="margin-top:8px">${sortByPriority(overdue).map(taskItemHTML).join('')}</div>`);
             if (normalRest.length > 0) blocks.push(`<div style="margin-top:8px">${normalRest.map(taskItemHTML).join('')}</div>`);
+            if (lowRest.length > 0) blocks.push(`<div class="done-toggle" style="margin-top:10px">Low</div>
+                <div style="margin-top:8px">${lowRest.map(taskItemHTML).join('')}</div>`);
 
             return `<div class="done-toggle" style="margin-top:14px">${escHtml(g.label)}</div>${blocks.join('')}`;
         }).join('');
@@ -2552,9 +2924,10 @@ async function uploadOneTaskPhoto(taskId, p, i) {
     try {
         const { error } = await sbClient.storage.from('task-photos').upload(path, p.blob, { contentType: 'image/jpeg' });
         if (error) throw error;
-        const { data } = sbClient.storage.from('task-photos').getPublicUrl(path);
+        const { data, error: signErr } = await sbClient.storage.from('task-photos').createSignedUrl(path, 60 * 60 * 12);
+        if (signErr) console.warn('Photo link failed:', signErr.message);
         URL.revokeObjectURL(p.url);
-        return { path, url: data.publicUrl };
+        return { path, url: data?.signedUrl || '' };
     } catch (err) {
         console.warn('Photo upload failed:', err.message);
         toast('A photo failed to upload', 'e');
@@ -2618,61 +2991,62 @@ async function submitTaskForm() {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Saving…';
     taskFormSaving = true;
-    let photos;
     try {
-        photos = await uploadPendingTaskPhotos(taskId);
+        const photos = await uploadPendingTaskPhotos(taskId);
+        // Re-read after the upload so a sync that landed meanwhile is not thrown away.
+        const tasks = getTasks();
+        let row;
+        if (wasEditingId) {
+            const idx = tasks.findIndex(t => t.id === wasEditingId);
+            if (idx === -1) {
+                taskFormSaving = false;
+                toast('This task no longer exists — nothing saved', 'e');
+                closeAddTaskForm();
+                return;
+            }
+            tasks[idx] = {
+                ...tasks[idx],
+                title,
+                description: document.getElementById('t-desc').value.trim(),
+                priority: taskFormPriority,
+                due_date: document.getElementById('t-due').value || null,
+                added_by: taskFormAddedBy,
+                location: taskFormLoc,
+                photos,
+            };
+            row = tasks[idx];
+        } else {
+            row = {
+                id: taskId,
+                title,
+                description: document.getElementById('t-desc').value.trim(),
+                priority: taskFormPriority,
+                due_date: document.getElementById('t-due').value || null,
+                added_by: taskFormAddedBy,
+                location: taskFormLoc,
+                photos,
+                status: 'open',
+                completion_note: '',
+                completed_at: null,
+                created_at: new Date().toISOString(),
+            };
+        }
+        if (!sbClient) { toast('Not signed in — task not saved', 'e'); return; }
+        const { error } = await sbUpsert('tasks', taskPayload(row));
+        if (!reportWrite(error, 'Could not save task')) return;
+        if (!wasEditingId) tasks.unshift(row);
+        saveTasks(tasks);
+        taskFormSaving = false;
+        closeAddTaskForm();
+        renderTasks();
+        toast(wasEditingId ? 'Task updated!' : 'Task added!', 'g');
     } catch (err) {
-        console.warn('Photo upload step failed:', err.message);
-        toast('Could not save photos — task not saved, try again', 'e');
-        return;
+        console.warn('Task save failed:', err.message);
+        toast('Could not save the task. Try again.', 'e');
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = prevLabel;
         taskFormSaving = false;
-    }
-
-    // Re-read now, right before use, to minimise the window for a concurrent
-    // background sync (which ran while photos were uploading) to be clobbered.
-    const tasks = getTasks();
-
-    if (wasEditingId) {
-        const idx = tasks.findIndex(t => t.id === wasEditingId);
-        if (idx === -1) { toast('This task no longer exists — nothing saved', 'e'); closeAddTaskForm(); return; }
-        tasks[idx].title       = title;
-        tasks[idx].description = document.getElementById('t-desc').value.trim();
-        tasks[idx].priority    = taskFormPriority;
-        tasks[idx].due_date    = document.getElementById('t-due').value || null;
-        tasks[idx].added_by    = taskFormAddedBy;
-        tasks[idx].location    = taskFormLoc;
-        tasks[idx].photos      = photos;
-        saveTasks(tasks);
-        if (sbClient) sbClient.from('tasks').upsert(tasks[idx]).then(({ error }) => { if (error) console.warn('Task update failed:', error.message); });
-        closeAddTaskForm();
-        renderTasks();
-        toast('Task updated!', 'g');
-    } else {
-        const task = {
-            id:               taskId,
-            title,
-            description:      document.getElementById('t-desc').value.trim(),
-            priority:         taskFormPriority,
-            due_date:         document.getElementById('t-due').value || null,
-            added_by:         taskFormAddedBy,
-            location:         taskFormLoc,
-            photos,
-            status:           'open',
-            completion_note:  '',
-            completed_at:     null,
-            created_at:       new Date().toISOString(),
-            notified_cleaner: false,
-            notified_owners:  false,
-        };
-        tasks.unshift(task);
-        saveTasks(tasks);
-        if (sbClient) sbClient.from('tasks').insert(task).then(({ error }) => { if (error) console.warn('Task insert failed:', error.message); });
-        closeAddTaskForm();
-        renderTasks();
-        toast('Task added!', 'g');
     }
 }
 
@@ -2697,20 +3071,18 @@ async function submitCompleteTask() {
     tasks[idx].status          = 'completed';
     tasks[idx].completed_at    = new Date().toISOString();
     tasks[idx].completion_note = note;
-    tasks[idx].notified_owners = false;
     tasks[idx].photos          = []; // completed tasks don't keep their photos, to save storage
-    saveTasks(tasks);
     if (sbClient) {
-        sbClient.from('tasks').upsert(tasks[idx]).then(({ error }) => {
-            if (error) console.warn('Task complete upsert failed:', error.message);
-        });
+        const { error } = await sbUpsert('tasks', taskPayload(tasks[idx]));
+        if (!reportWrite(error, 'Could not complete task')) return;
         const paths = photosToDelete.map(p => p.path).filter(Boolean);
         if (paths.length) {
-            sbClient.storage.from('task-photos').remove(paths).then(({ error }) => {
-                if (error) console.warn('Photo delete on complete failed:', error.message);
+            sbClient.storage.from('task-photos').remove(paths).then(({ error: pe }) => {
+                if (pe) console.warn('Photo delete on complete failed:', pe.message);
             });
         }
     }
+    saveTasks(tasks);
     closeCompleteTask();
     renderTasks();
     toast('Task marked done!', 'g');
@@ -2729,34 +3101,21 @@ function reopenTask(id) {
         tasks[idx].status          = 'open';
         tasks[idx].completed_at    = null;
         tasks[idx].completion_note = '';
-        tasks[idx].notified_owners = false;
-        saveTasks(tasks);
-        if (sbClient) {
-            sbClient.from('tasks').upsert(tasks[idx]).then(({ error }) => {
-                if (error) console.warn('Task reopen failed:', error.message);
-            });
-        }
-        renderTasks();
-        toast('Task reopened', 'g');
+        (async () => {
+            if (sbClient) {
+                const { error } = await sbUpsert('tasks', taskPayload(tasks[idx]));
+                if (!reportWrite(error, 'Could not reopen task')) return;
+            }
+            saveTasks(tasks);
+            renderTasks();
+            toast('Task reopened', 'g');
+        })();
     }, false);
 }
 
 // ============================================================
 // SETTINGS PUSH TO SUPABASE
 // ============================================================
-function pushSettingsToSupabase(s) {
-    if (!sbClient) return;
-    sbClient.from('app_settings').upsert({
-        id:           1,
-        cleaner_name: s.cleanerName,
-        pin:          s.pin,
-        recipients:   s.recipients,
-        updated_at:   new Date().toISOString(),
-    }).then(({ error }) => {
-        if (error) console.warn('Settings push failed:', error.message);
-    });
-}
-
 // ============================================================
 // INIT
 // ============================================================
@@ -2772,7 +3131,7 @@ function init() {
     renderHome();
 }
 
-syncPinFromSupabase(); // kick off in the background so it's ready by the time PIN entry finishes
+boot();
 </script>
 </body>
 </html>
