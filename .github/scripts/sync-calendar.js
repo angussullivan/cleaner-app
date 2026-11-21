@@ -1,14 +1,15 @@
 // Syncs manually-added cleaning blocks from Supabase to Google Calendar.
 // Blocks auto-generated for Airbnb checkout days (id ending in '-auto') are excluded.
-// Runs on a 2-hour cron. Uses a Google service account — share jennangusplan@gmail.com
-// calendar with the service account email (editor access) before first run.
+// Triggered hourly by cron-job.org (see docs/OWNER-SETUP.md). Uses a Google service
+// account — share the calendar in GOOGLE_CALENDAR_ID with the service account email
+// (editor access) before the first run.
 //
 // Uses Node.js built-in fetch + crypto (no googleapis/node-fetch dependency).
 
 import { createClient } from '@supabase/supabase-js';
 import { createSign } from 'crypto';
 
-const { SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_SERVICE_ACCOUNT_JSON } = process.env;
+const { SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_CALENDAR_ID } = process.env;
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY');
     process.exit(1);
@@ -17,10 +18,14 @@ if (!GOOGLE_SERVICE_ACCOUNT_JSON) {
     console.error('Missing GOOGLE_SERVICE_ACCOUNT_JSON');
     process.exit(1);
 }
+if (!GOOGLE_CALENDAR_ID) {
+    console.error('Missing GOOGLE_CALENDAR_ID');
+    process.exit(1);
+}
 
 const supabase       = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const serviceAccount = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
-const CALENDAR_ID    = 'jennangusplan@gmail.com';
+const CALENDAR_ID    = GOOGLE_CALENDAR_ID.trim();
 
 // Sydney today
 const sydneyNow  = new Date(new Date().toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
