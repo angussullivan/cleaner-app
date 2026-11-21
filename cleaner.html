@@ -1199,7 +1199,7 @@ function unlockApp() {
     init();
 }
 async function fetchAppRole() {
-    const { data, error } = await sbClient.rpc('current_app_role');
+    const { data, error } = await sbClient.rpc('cleaner_current_role');
     if (error) return { role: null, error };
     return { role: data || null, error: null };
 }
@@ -2196,11 +2196,11 @@ async function saveSettings() {
     });
     if (!reportWrite(error, 'Could not save settings')) return;
     if (cleanerPin) {
-        const { error: pinErr } = await sbClient.rpc('set_app_pin', { target_role: 'cleaner', new_pin: cleanerPin });
+        const { error: pinErr } = await sbClient.rpc('cleaner_set_pin', { target_role: 'cleaner', new_pin: cleanerPin });
         if (!reportWrite(pinErr, 'Could not change the cleaner PIN')) return;
     }
     if (ownerPin) {
-        const { error: pinErr } = await sbClient.rpc('set_app_pin', { target_role: 'owner', new_pin: ownerPin });
+        const { error: pinErr } = await sbClient.rpc('cleaner_set_pin', { target_role: 'owner', new_pin: ownerPin });
         if (!reportWrite(pinErr, 'Could not change the owner PIN')) return;
     }
     storeSettings(s);
@@ -2214,7 +2214,7 @@ function confirmClearData() {
     if (appRole !== 'owner') { toast('Only an owner can clear hours', 'e'); return; }
     showConfirm('Clear all data?', 'This will permanently delete all logged hours. This cannot be undone.', 'Delete Everything', async () => {
         if (!sbClient) { toast('Not signed in', 'e'); return; }
-        const { error } = await sbClient.rpc('clear_all_hours');
+        const { error } = await sbClient.rpc('cleaner_clear_all_hours');
         if (!reportWrite(error, 'Could not clear hours')) return;
         saveData({ entries: [] });
         const s = getSettings(); s.lastSent = null; storeSettings(s);

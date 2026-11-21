@@ -4,6 +4,12 @@ Do these steps in order. The app on the phones keeps working through step 6. Ste
 
 The repo stays public. That is fine once this list is done. The publishable key in `cleaner.html` is meant to be public. The PIN hashes, the Airbnb feed URLs, and the service-role key are not.
 
+This Supabase project also runs Reservoir Stays (`rs_rooms`, `rs_bookings`, the other `rs_*` tables, its photo storage, and its photo edge functions). The SQL in this repo does not modify those. Three project-wide settings stay as they are:
+
+- Leave **email sign-up** on. It is on today. Reservoir Stays may register guests with it. The cleaner app does not need it off: someone who signs up has no cleaner role, so the cleaner policies deny them.
+- Leave **anonymous sign-in** as it is. It is off today. Do not toggle it.
+- Do **not** rotate the publishable key or the JWT secret. Reservoir Stays uses this same project key. After step 8 the leaked key still cannot read the cleaner tables, and it already cannot read the `rs_*` tables. Rotating it would take Reservoir Stays down until every one of its clients is updated.
+
 ## 1. Regenerate the Airbnb calendar links — but not until step 7
 
 The three export URLs were committed in `.github/scripts/sync-airbnb.js`. Anyone who clones the repo, including its history, has those tokens. They keep working until you reset them. **Do not click Reset until the new sync script is on `main` and the GitHub secrets exist** (step 6 and step 7). Resetting earlier makes the copy still in git the only copy, and that copy is about to be deleted from the code, so the sync would have no working URL.
@@ -29,15 +35,15 @@ Match listings to secrets by the number between `/ical/` and `.ics` (that number
 
 Open the project `yslpaxzfpdzxzhuspmij` → **SQL Editor** → New query. Paste `supabase/migrations/20261121090000_prepare_auth.sql` and run it. You should see success. This adds owner/cleaner login, lets Low priority save, and adds booking-override columns. It does **not** remove the old anon access and it does **not** remove the plaintext PIN, so the app Angelica has open today keeps working.
 
-### Turn off public sign-up
+### Do not change Auth provider settings
 
-**Authentication → Sign In / Providers → Email** (the screen is sometimes labelled **Sign In / Up**):
+**Authentication → Sign In / Providers → Email.** Confirm, and then leave it:
 
-- Turn **off** “Allow new users to sign up” (or “Enable sign ups”).
-- Turn **off** anonymous sign-ins if that toggle is on.
-- Leave email auth itself on. The edge function signs in with it.
+- “Allow new users to sign up” stays **on**. Reservoir Stays may use it. A new account still cannot open the cleaner app, because only the two users below get a row in `app_roles`.
+- Anonymous sign-ins stay **off**. That is already the project setting. Do not turn them on for the cleaner app, and do not go looking for a way to force them off if a future Reservoir Stays change has turned them on.
+- Email auth stays on. The PIN function signs in with it.
 
-If sign-ups stay on, anyone could register and the new row policies would treat them as a logged-in user only when they also have a row in `app_roles`. They would not get a role. Turning sign-ups off means they cannot create the account in the first place.
+The two users you add next are extra accounts for this app. They do not replace `rs_admin_users` or any Reservoir Stays login.
 
 ### Create the two accounts
 
@@ -77,14 +83,14 @@ Pick two different 4-digit PINs. Do not reuse `1234`. Tell Angelica only the cle
 SQL Editor — replace the quoted digits, run once, then delete this query from the editor history (the history stores the plaintext):
 
 ```sql
-insert into private.pin_credentials (role, pin_hash) values
+insert into cleaner_private.pin_credentials (role, pin_hash) values
   ('cleaner', extensions.crypt('CLEANER_PIN_HERE', extensions.gen_salt('bf'))),
   ('owner',   extensions.crypt('OWNER_PIN_HERE', extensions.gen_salt('bf')))
 on conflict (role) do update
   set pin_hash = excluded.pin_hash, updated_at = now();
 
 -- Expect two rows. This does not print the PINs.
-select role, updated_at from private.pin_credentials order by role;
+select role, updated_at from cleaner_private.pin_credentials order by role;
 ```
 
 A 4-digit PIN can be guessed. The database allows 8 failures per network address per 15 minutes, and 40 failures across everyone in that window, then it locks for the rest of the window. Change the PIN from Settings if that starts happening for no reason.
@@ -102,7 +108,7 @@ A 4-digit PIN can be guessed. The database allows 8 failures per network address
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are injected by Supabase. Do not copy the service-role key into the repo.
 
-Deploy `supabase/functions/pin-login` with JWT verification **off**. The publishable key is not a JWT; if verification stays on, every PIN fails before the function runs.
+Deploy only `supabase/functions/pin-login`, with JWT verification **off**. The publishable key is not a JWT; if verification stays on, every PIN fails before the function runs. Do not redeploy or edit the Reservoir Stays photo functions.
 
 From a laptop with the [Supabase CLI](https://supabase.com/docs/guides/cli), in this repo:
 
@@ -219,23 +225,15 @@ Only after step 6 succeeded on all three phones.
 
 SQL Editor → paste `supabase/migrations/20261121100000_lockdown.sql` → run.
 
-This drops anon access, makes the `task-photos` bucket private, deletes the plaintext PIN column, and drops the unused `notified_*` / legacy task-assignment columns. The service-role scripts are unaffected.
+This drops anon access on the cleaner tables only, makes the `task-photos` bucket private, deletes the plaintext PIN column, and drops the unused `notified_*` / legacy task-assignment columns. It does not change `rs_*` tables, other storage buckets, or edge functions. The service-role scripts are unaffected.
 
 Reload each phone (the `?v=2` URL, or lock and enter the PIN again). Hours, the plan, and a photo must still load. A private window with no PIN must not show any bookings: the page stops at the PIN screen, and the publishable key alone gets nothing from the API.
 
-## 9. Rotate the publishable key
+## 9. Do not rotate the publishable key
 
-Do this after step 8, when Angelica is not mid-clean. It causes a few minutes where the app will not load.
+Skip this. Reservoir Stays uses the same Supabase project, so it uses the same publishable key. Rotating that key, or disabling the legacy anon JWT, takes Reservoir Stays offline until every one of its apps is edited. Step 8 already stops the leaked key from reading or writing cleaner data, and that key already cannot read the `rs_*` tables.
 
-The key in git history and in `cleaner.html` was able to read and write everything until step 8. Step 8 already removes that power. Rotating the key invalidates the leaked copy anyway.
-
-1. Supabase → **Project Settings → API Keys**.
-2. Rotate the **publishable** key. Copy the new value.
-3. If a **legacy anon** JWT key is shown as enabled, disable it. Do **not** disable or rotate the secret / service_role key.
-4. Do **not** rotate the JWT secret. It was never in the repo. Rotating it signs everyone out and can invalidate `SUPABASE_SERVICE_KEY` if that secret is the legacy service-role JWT, which stops the GitHub scripts.
-5. In `cleaner.html`, replace the string on the line `const SUPABASE_ANON_KEY = '...'` with the new publishable key. Commit and push to `main`.
-
-The new key will be public in the repo again. That is expected. After step 8 it cannot read or write data.
+Also do not rotate the JWT secret or the secret/service-role key. The JWT secret was never in the repo. Rotating it signs everyone out, including Reservoir Stays, and can invalidate `SUPABASE_SERVICE_KEY`, which stops the GitHub scripts.
 
 ## 10. GitHub repo description
 

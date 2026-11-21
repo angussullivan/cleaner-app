@@ -2,32 +2,37 @@
 -- The current phone app keeps working: anon policies and the pin column stay.
 -- Do not put real PINs in this file. Set them with the statement in docs/OWNER-SETUP.md.
 -- Safe to re-run.
+--
+-- This project also hosts Reservoir Stays. This script does not alter rs_* tables,
+-- other storage buckets, Auth provider settings, or existing edge functions.
+-- The PIN schema is named cleaner_private on purpose: a schema named private may
+-- already belong to Reservoir Stays, and revoking usage on it would break that app.
 
 create extension if not exists pgcrypto with schema extensions;
 
-create schema if not exists private;
-revoke all on schema private from public;
-revoke all on schema private from anon, authenticated;
+create schema if not exists cleaner_private;
+revoke all on schema cleaner_private from public;
+revoke all on schema cleaner_private from anon, authenticated;
 
-create table if not exists private.pin_credentials (
+create table if not exists cleaner_private.pin_credentials (
     role       text primary key check (role in ('cleaner', 'owner')),
     pin_hash   text not null,
     updated_at timestamptz not null default now()
 );
 
-create table if not exists private.pin_attempts (
+create table if not exists cleaner_private.pin_attempts (
     id         bigint generated always as identity primary key,
     ip         text not null,
     ok         boolean not null,
     created_at timestamptz not null default now()
 );
 
-create index if not exists pin_attempts_created_idx on private.pin_attempts (created_at);
+create index if not exists pin_attempts_created_idx on cleaner_private.pin_attempts (created_at);
 
-alter table private.pin_credentials enable row level security;
-alter table private.pin_attempts enable row level security;
-revoke all on private.pin_credentials from public, anon, authenticated, service_role;
-revoke all on private.pin_attempts from public, anon, authenticated, service_role;
+alter table cleaner_private.pin_credentials enable row level security;
+alter table cleaner_private.pin_attempts enable row level security;
+revoke all on cleaner_private.pin_credentials from public, anon, authenticated, service_role;
+revoke all on cleaner_private.pin_attempts from public, anon, authenticated, service_role;
 
 create table if not exists public.app_roles (
     user_id uuid primary key references auth.users(id) on delete cascade,
@@ -38,7 +43,7 @@ alter table public.app_roles enable row level security;
 revoke all on public.app_roles from public, anon, authenticated;
 
 -- Who is calling. security definer so the table itself stays unreadable.
-create or replace function public.current_app_role()
+create or replace function public.cleaner_current_role()
 returns text
 language sql
 stable
@@ -48,17 +53,17 @@ as $$
     select role from public.app_roles where user_id = auth.uid()
 $$;
 
-revoke all on function public.current_app_role() from public, anon;
-grant execute on function public.current_app_role() to authenticated, service_role;
+revoke all on function public.cleaner_current_role() from public, anon;
+grant execute on function public.cleaner_current_role() to authenticated, service_role;
 
 -- Checks a 4-digit PIN and rate-limits guesses. Granted to service_role only;
 -- the pin-login edge function is the caller. Returns 'cleaner', 'owner',
 -- 'locked', or null.
-create or replace function public.verify_app_pin(candidate text, client_ip text)
+create or replace function public.cleaner_verify_pin(candidate text, client_ip text)
 returns text
 language plpgsql
 security definer
-set search_path = private, public, extensions
+set search_path = cleaner_private, public, extensions
 as $$
 declare
     v_ip text := left(coalesce(nullif(trim(client_ip), ''), 'unknown'), 64);
@@ -68,14 +73,14 @@ declare
 begin
     perform pg_sleep(0.35);
 
-    delete from private.pin_attempts where created_at < now() - interval '1 day';
+    delete from cleaner_private.pin_attempts where created_at < now() - interval '1 day';
 
     select count(*) into v_ip_fails
-    from private.pin_attempts
+    from cleaner_private.pin_attempts
     where ip = v_ip and not ok and created_at > now() - interval '15 minutes';
 
     select count(*) into v_all_fails
-    from private.pin_attempts
+    from cleaner_private.pin_attempts
     where not ok and created_at > now() - interval '15 minutes';
 
     if v_ip_fails >= 8 or v_all_fails >= 40 then
@@ -83,39 +88,39 @@ begin
     end if;
 
     if candidate is null or candidate !~ '^[0-9]{4}$' then
-        insert into private.pin_attempts (ip, ok) values (v_ip, false);
+        insert into cleaner_private.pin_attempts (ip, ok) values (v_ip, false);
         return null;
     end if;
 
     select role into v_role
-    from private.pin_credentials
+    from cleaner_private.pin_credentials
     where pin_hash = extensions.crypt(candidate, pin_hash)
     order by case role when 'owner' then 0 else 1 end
     limit 1;
 
     if v_role is null then
-        insert into private.pin_attempts (ip, ok) values (v_ip, false);
+        insert into cleaner_private.pin_attempts (ip, ok) values (v_ip, false);
         return null;
     end if;
 
-    insert into private.pin_attempts (ip, ok) values (v_ip, true);
+    insert into cleaner_private.pin_attempts (ip, ok) values (v_ip, true);
     return v_role;
 end;
 $$;
 
-revoke all on function public.verify_app_pin(text, text) from public, anon, authenticated;
-grant execute on function public.verify_app_pin(text, text) to service_role;
+revoke all on function public.cleaner_verify_pin(text, text) from public, anon, authenticated;
+grant execute on function public.cleaner_verify_pin(text, text) to service_role;
 
-create or replace function public.set_app_pin(target_role text, new_pin text)
+create or replace function public.cleaner_set_pin(target_role text, new_pin text)
 returns void
 language plpgsql
 security definer
-set search_path = private, public, extensions
+set search_path = cleaner_private, public, extensions
 as $$
 declare
     other_hash text;
 begin
-    if public.current_app_role() is distinct from 'owner' then
+    if public.cleaner_current_role() is distinct from 'owner' then
         raise exception 'Only an owner can change PINs';
     end if;
     if target_role not in ('cleaner', 'owner') then
@@ -126,14 +131,14 @@ begin
     end if;
 
     select pin_hash into other_hash
-    from private.pin_credentials
+    from cleaner_private.pin_credentials
     where role <> target_role;
 
     if other_hash is not null and other_hash = extensions.crypt(new_pin, other_hash) then
         raise exception 'Cleaner PIN and owner PIN must be different';
     end if;
 
-    insert into private.pin_credentials (role, pin_hash)
+    insert into cleaner_private.pin_credentials (role, pin_hash)
     values (target_role, extensions.crypt(new_pin, extensions.gen_salt('bf')))
     on conflict (role) do update
         set pin_hash = excluded.pin_hash,
@@ -141,25 +146,25 @@ begin
 end;
 $$;
 
-revoke all on function public.set_app_pin(text, text) from public, anon;
-grant execute on function public.set_app_pin(text, text) to authenticated;
+revoke all on function public.cleaner_set_pin(text, text) from public, anon;
+grant execute on function public.cleaner_set_pin(text, text) to authenticated;
 
-create or replace function public.clear_all_hours()
+create or replace function public.cleaner_clear_all_hours()
 returns void
 language plpgsql
 security definer
 set search_path = public
 as $$
 begin
-    if public.current_app_role() is distinct from 'owner' then
+    if public.cleaner_current_role() is distinct from 'owner' then
         raise exception 'Only an owner can clear all hours';
     end if;
     delete from public.hours_entries;
 end;
 $$;
 
-revoke all on function public.clear_all_hours() from public, anon;
-grant execute on function public.clear_all_hours() to authenticated;
+revoke all on function public.cleaner_clear_all_hours() from public, anon;
+grant execute on function public.cleaner_clear_all_hours() to authenticated;
 
 -- Bookings the owner adds or corrects. The sync script will not overwrite
 -- source = 'manual', pinned, or suppressed rows.
@@ -179,63 +184,63 @@ alter table public.tasks add constraint tasks_priority_check check (priority in 
 drop policy if exists "hours_member_all" on public.hours_entries;
 create policy "hours_member_all" on public.hours_entries
     for all to authenticated
-    using (public.current_app_role() in ('cleaner', 'owner'))
-    with check (public.current_app_role() in ('cleaner', 'owner'));
+    using (public.cleaner_current_role() in ('cleaner', 'owner'))
+    with check (public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "bookings_cleaner_read" on public.airbnb_bookings;
 create policy "bookings_cleaner_read" on public.airbnb_bookings
     for select to authenticated
-    using (public.current_app_role() = 'cleaner' and not suppressed);
+    using (public.cleaner_current_role() = 'cleaner' and not suppressed);
 
 drop policy if exists "bookings_owner_all" on public.airbnb_bookings;
 create policy "bookings_owner_all" on public.airbnb_bookings
     for all to authenticated
-    using (public.current_app_role() = 'owner')
-    with check (public.current_app_role() = 'owner');
+    using (public.cleaner_current_role() = 'owner')
+    with check (public.cleaner_current_role() = 'owner');
 
 drop policy if exists "issues_member_all" on public.maintenance_issues;
 create policy "issues_member_all" on public.maintenance_issues
     for all to authenticated
-    using (public.current_app_role() in ('cleaner', 'owner'))
-    with check (public.current_app_role() in ('cleaner', 'owner'));
+    using (public.cleaner_current_role() in ('cleaner', 'owner'))
+    with check (public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "tasks_member_all" on public.tasks;
 create policy "tasks_member_all" on public.tasks
     for all to authenticated
-    using (public.current_app_role() in ('cleaner', 'owner'))
-    with check (public.current_app_role() in ('cleaner', 'owner'));
+    using (public.cleaner_current_role() in ('cleaner', 'owner'))
+    with check (public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "cleaning_member_all" on public.cleaning_blocks;
 create policy "cleaning_member_all" on public.cleaning_blocks
     for all to authenticated
-    using (public.current_app_role() in ('cleaner', 'owner'))
-    with check (public.current_app_role() in ('cleaner', 'owner'));
+    using (public.cleaner_current_role() in ('cleaner', 'owner'))
+    with check (public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "settings_member_read" on public.app_settings;
 create policy "settings_member_read" on public.app_settings
     for select to authenticated
-    using (public.current_app_role() in ('cleaner', 'owner'));
+    using (public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "settings_owner_write" on public.app_settings;
 create policy "settings_owner_write" on public.app_settings
     for all to authenticated
-    using (public.current_app_role() = 'owner')
-    with check (public.current_app_role() = 'owner');
+    using (public.cleaner_current_role() = 'owner')
+    with check (public.cleaner_current_role() = 'owner');
 
 drop policy if exists "auth_insert_task_photos" on storage.objects;
 create policy "auth_insert_task_photos" on storage.objects
     for insert to authenticated
-    with check (bucket_id = 'task-photos' and public.current_app_role() in ('cleaner', 'owner'));
+    with check (bucket_id = 'task-photos' and public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "auth_read_task_photos" on storage.objects;
 create policy "auth_read_task_photos" on storage.objects
     for select to authenticated
-    using (bucket_id = 'task-photos' and public.current_app_role() in ('cleaner', 'owner'));
+    using (bucket_id = 'task-photos' and public.cleaner_current_role() in ('cleaner', 'owner'));
 
 drop policy if exists "auth_delete_task_photos" on storage.objects;
 create policy "auth_delete_task_photos" on storage.objects
     for delete to authenticated
-    using (bucket_id = 'task-photos' and public.current_app_role() in ('cleaner', 'owner'));
+    using (bucket_id = 'task-photos' and public.cleaner_current_role() in ('cleaner', 'owner'));
 
 -- The plaintext PIN stays for the old app until lockdown, but a signed-in
 -- session (the new app) must not be able to read it.

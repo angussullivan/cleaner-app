@@ -8,7 +8,8 @@
 // Secrets (Dashboard → Edge Functions → Secrets), matching two Auth users:
 //   APP_CLEANER_EMAIL, APP_CLEANER_PASSWORD
 //   APP_OWNER_EMAIL, APP_OWNER_PASSWORD
-// PIN hashes live in private.pin_credentials and are checked by verify_app_pin.
+// PIN hashes live in cleaner_private.pin_credentials and are checked by cleaner_verify_pin.
+// This function is new. Do not redeploy the Reservoir Stays photo functions.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -56,12 +57,12 @@ Deno.serve(async (req) => {
     const admin = createClient(url, serviceKey, {
         auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data: role, error: verifyError } = await admin.rpc('verify_app_pin', {
+    const { data: role, error: verifyError } = await admin.rpc('cleaner_verify_pin', {
         candidate: pin,
         client_ip: clientIp(req),
     });
     if (verifyError) {
-        console.error('verify_app_pin failed:', verifyError.message);
+        console.error('cleaner_verify_pin failed:', verifyError.message);
         return json({ message: 'Login is not configured yet.' }, 500);
     }
     if (role === 'locked') {

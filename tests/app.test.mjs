@@ -78,6 +78,18 @@ test('low priority is allowed by the migration the owner runs first', () => {
     assert.match(sql, /priority in \('low', 'normal', 'urgent'\)/);
     const lockdown = readFileSync(path.join(root, 'supabase/migrations/20261121100000_lockdown.sql'), 'utf8');
     assert.match(lockdown, /drop policy if exists "app_all"/);
-    assert.match(lockdown, /set public = false/);
+    assert.match(lockdown, /set public = false where id = 'task-photos'/);
     assert.match(lockdown, /drop column if exists pin/);
+});
+
+test('migrations do not touch Reservoir Stays objects or a shared private schema', () => {
+    const prepare = readFileSync(path.join(root, 'supabase/migrations/20261121090000_prepare_auth.sql'), 'utf8');
+    const lockdown = readFileSync(path.join(root, 'supabase/migrations/20261121100000_lockdown.sql'), 'utf8');
+    const sqlOnly = (text) => text.split('\n').filter(line => !line.trim().startsWith('--')).join('\n');
+    const both = sqlOnly(prepare) + '\n' + sqlOnly(lockdown);
+    assert.doesNotMatch(both, /\brs_/);
+    assert.doesNotMatch(both, /revoke all on schema private\b/i);
+    assert.match(prepare, /create schema if not exists cleaner_private/);
+    assert.match(prepare, /bucket_id = 'task-photos'/);
+    assert.doesNotMatch(lockdown, /revoke all on table public\.(?!hours_entries|airbnb_bookings|maintenance_issues|app_settings|tasks|cleaning_blocks)/);
 });

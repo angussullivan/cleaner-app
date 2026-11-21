@@ -1,8 +1,12 @@
 -- 02 LOCKDOWN — run ONLY after all three phones have opened the NEW app,
 -- entered a PIN, and can see hours, the plan, and a photo.
--- Until this runs, anyone with the public anon key can still read and edit data.
--- After this runs, the previous app (anon key, shared PIN checked in the browser) stops working.
+-- Until this runs, anyone with the public anon key can still read and edit cleaner data.
+-- After this runs, the previous cleaner app (anon key, shared PIN checked in the browser) stops working.
 -- That is intentional. Do not run it before the new app is confirmed.
+--
+-- Reservoir Stays shares this project. This script only drops the cleaner policies
+-- named below, revokes anon on those six cleaner tables, and sets the task-photos
+-- bucket to private. It does not touch rs_* tables, other buckets, or edge functions.
 
 drop policy if exists "app_all" on public.hours_entries;
 drop policy if exists "app_read" on public.airbnb_bookings;
@@ -24,7 +28,7 @@ revoke all on table public.app_settings from anon;
 revoke all on table public.tasks from anon;
 revoke all on table public.cleaning_blocks from anon;
 
--- Plaintext PIN. Hashes live in private.pin_credentials, which anon cannot read.
+-- Plaintext PIN. Hashes live in cleaner_private.pin_credentials, which anon cannot read.
 alter table public.app_settings drop column if exists pin;
 
 -- Written by the app and never read. Task assignment is no longer a column:

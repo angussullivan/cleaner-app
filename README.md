@@ -18,7 +18,7 @@ The app is served by GitHub Pages: <https://angussullivan.github.io/cleaner-app/
 
 ## How access works
 
-The publishable Supabase key in `cleaner.html` is public. It cannot read or change data. Angelica, Angus, and Jenna enter a 4-digit PIN. An edge function checks it against a hash the anon key cannot read, then signs in a pre-created user:
+The publishable Supabase key in `cleaner.html` is public, and the same Supabase project also runs Reservoir Stays. Do not rotate that key, and do not turn off email sign-up: both are shared. After lockdown the key cannot read or change cleaner data. Angelica, Angus, and Jenna enter a 4-digit PIN. An edge function checks it against a hash the anon key cannot read, then signs in a pre-created user:
 
 - Cleaner PIN — hours, plan, tasks, issues, cleaning blocks. No settings and no "Clear all hours".
 - Owner PIN (shared by Angus and Jenna) — the same, plus settings, PIN changes, clearing hours, and adding or correcting bookings.
